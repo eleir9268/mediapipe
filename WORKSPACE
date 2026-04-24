@@ -1,17 +1,5 @@
 workspace(name = "mediapipe")
 
-# Override @python definitions.
-local_repository(
-    name = "python",
-    path = "python",
-)
-
-# Override @python_qnx definitions.
-local_repository(
-    name = "python_qnx",
-    path = "python_qnx",
-)
-
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 # Protobuf expects an //external:python_headers target

@@ -106,12 +106,6 @@ build:darwin_arm64 --macos_minimum_os=10.16
 build:darwin_arm64 --cpu=darwin_arm64
 
 # Use our local toolchains
-build --extra_toolchains=@python_qnx//:qnx_py_toolchain
-build --extra_toolchains=@python_qnx//:qnx_py_toolchain2
-build --extra_toolchains=@python_qnx//:qnx_py_cc_toolchain
-build --extra_toolchains=//cpp_qnx:qnx_cc_toolchain
-build --extra_toolchains=//buildbase_qnx:qnx_cmake_toolchain
-build --extra_toolchains=//buildbase_qnx:qnx_ninja_toolchain
 build --conlyopt="-std=c99"
 build --copt="-DEIGEN_DONT_VECTORIZE=1"
 build --copt="-DFARMHASH_LITTLE_ENDIAN=1"
