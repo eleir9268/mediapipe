@@ -1,0 +1,13 @@
+diff --git a/audio/dsp/portable/c.bzl b/audio/dsp/portable/c.bzl
+index d3b2d96..0577550 100644
+--- a/audio/dsp/portable/c.bzl
++++ b/audio/dsp/portable/c.bzl
+@@ -13,7 +13,7 @@ WARNING_OPTS =  select({
+ })
+ 
+ # Build with C89 standard compatibility.
+-DEFAULT_C_OPTS = WARNING_OPTS + ["-std=c89"]
++DEFAULT_C_OPTS = WARNING_OPTS + ["-std=c99"]
+ 
+ def c_binary(name = None, **kwargs):
+     """cc_binary with DEFAULT_COPTS."""

@@ -15,7 +15,9 @@
 #include <errno.h>
 #include <pthread.h>
 #include <string.h>
+#ifndef __QNX__
 #include <sys/syscall.h>
+#endif
 #include <unistd.h>
 
 #include "absl/log/absl_check.h"
@@ -104,6 +106,12 @@ void* ThreadPool::WorkerThread::ThreadBody(void* arg) {
   }
 #if __APPLE__
   int error = pthread_setname_np(name.c_str());
+  if (error != 0) {
+    ABSL_LOG(ERROR) << "Error : " << strerror(error) << std::endl
+                    << "Failed to set name for thread: " << name;
+  }
+#else  // __APPLE__
+  int error = pthread_setname_np(0, name.c_str());
   if (error != 0) {
     ABSL_LOG(ERROR) << "Error : " << strerror(error) << std::endl
                     << "Failed to set name for thread: " << name;

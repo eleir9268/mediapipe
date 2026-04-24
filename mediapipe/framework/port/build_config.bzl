@@ -3,7 +3,6 @@
 
 """.bzl file for mediapipe open source build configs."""
 
-load("@npm//@bazel/typescript:index.bzl", "ts_project")
 load(
     "//mediapipe/framework/tool:mediapipe_proto.bzl",
     _mediapipe_cc_proto_library = "mediapipe_cc_proto_library",
@@ -42,22 +41,6 @@ def mediapipe_ts_library(
       allow_unoptimized_namespaces: ignored, used only internally
     """
     _ignore = [allow_unoptimized_namespaces]  # buildifier: disable=unused-variable
-
-    ts_project(**provided_args(
-        name = name,
-        srcs = srcs,
-        visibility = visibility,
-        deps = deps + [
-            "@npm//@types/jasmine",
-            "@npm//@types/node",
-            "@npm//@types/offscreencanvas",
-            "@npm//@types/google-protobuf",
-            "@npm//@webgpu/types",
-        ],
-        testonly = testonly,
-        declaration = True,
-        tsconfig = "//:tsconfig.json",
-    ))
 
 def mediapipe_ts_declaration(
         name,

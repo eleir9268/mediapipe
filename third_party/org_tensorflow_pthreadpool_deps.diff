@@ -1,0 +1,68 @@
+diff --git a/tensorflow/lite/kernels/internal/BUILD b/tensorflow/lite/kernels/internal/BUILD
+index 2a1f510c131..bd3be2dbe23 100644
+--- a/tensorflow/lite/kernels/internal/BUILD
++++ b/tensorflow/lite/kernels/internal/BUILD
+@@ -374,6 +374,7 @@ cc_library(
+         "@eigen_archive//:eigen3",
+         "@gemmlowp//:fixedpoint",
+         "@ruy//ruy/profiler:instrumentation",
++        "@pthreadpool",
+     ],
+ )
+ 
+@@ -412,6 +413,7 @@ cc_library(
+         "@eigen_archive//:eigen3",
+         "@gemmlowp",
+         "@ruy//ruy/profiler:instrumentation",
++        "@pthreadpool",
+     ],
+ )
+ 
+@@ -430,6 +432,7 @@ cc_library(
+         "//tensorflow/lite/core/c:common",
+         "@eigen_archive//:eigen3",
+         "@local_xla//xla/tsl/framework/convolution:eigen_spatial_convolutions-inl",
++        "@pthreadpool",
+     ],
+ )
+ 
+@@ -1007,6 +1010,7 @@ cc_library(
+         "//tensorflow/lite/kernels:cpu_backend_context",
+         "//tensorflow/lite/kernels:cpu_backend_gemm",
+         "@ruy//ruy",
++        "@pthreadpool",
+     ],
+ )
+ 
+@@ -1032,6 +1036,7 @@ cc_library(
+         "//tensorflow/lite/kernels:op_macros",
+         "@com_google_absl//absl/base:prefetch",
+         "@ruy//ruy/profiler:instrumentation",
++        "@pthreadpool",
+     ],
+ )
+ 
+@@ -1108,6 +1113,7 @@ cc_library(
+     deps = [
+         ":cpu_check",
+         "//tensorflow/lite/core/c:common",
++        "@pthreadpool",
+     ] + selects.with_or({
+         (
+             ":arm_any",
+@@ -1144,6 +1150,7 @@ cc_library(
+         ":tensor_utils_no_eigen",
+         "//tensorflow/lite/core/c:common",
+         "@eigen_archive//:eigen3",
++        "@pthreadpool",
+     ] + selects.with_or({
+         (
+             ":arm_any",
+@@ -1193,6 +1200,7 @@ cc_test(
+         "//tensorflow/lite/kernels:cpu_backend_context",
+         "//tensorflow/lite/kernels:test_util",
+         "@com_google_googletest//:gtest_main",
++        "@pthreadpool",
+     ],
+ )
+ 

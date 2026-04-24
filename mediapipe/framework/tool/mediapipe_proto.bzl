@@ -6,7 +6,6 @@ load("//mediapipe/framework/tool:mediapipe_graph.bzl", "mediapipe_options_librar
 load("//mediapipe/framework/tool:mediapipe_proto_allowlist.bzl", "rewrite_target_list")
 load("@com_google_protobuf//:protobuf.bzl", "cc_proto_library", "py_proto_library")
 load("@rules_proto//proto:defs.bzl", _proto_library = "proto_library")
-load("@rules_proto_grpc//js:defs.bzl", "js_proto_library")
 
 java_proto_library = native.java_proto_library
 java_lite_proto_library = native.java_lite_proto_library
@@ -138,17 +137,6 @@ def mediapipe_proto_library_impl(
         java_proto_library(**provided_args(
             name = replace_suffix(name, "_proto", "_java_proto"),
             deps = proto_deps,
-            visibility = visibility,
-            testonly = testonly,
-            compatible_with = compatible_with,
-        ))
-
-    if def_jspb_proto:
-        mediapipe_js_proto_library(**provided_args(
-            name = replace_suffix(name, "_proto", "_jspb_proto"),
-            srcs = srcs,
-            deps = proto_deps,
-            lib_proto_deps = deps,
             visibility = visibility,
             testonly = testonly,
             compatible_with = compatible_with,
@@ -439,16 +427,6 @@ def mediapipe_js_proto_library_oss(
         name = replace_suffix(name, "_jspb_proto", "_lib_proto"),
         srcs = srcs,
         deps = lib_proto_deps,
-        visibility = visibility,
-    )
-    js_proto_library(
-        name = name,
-        protos = [replace_suffix(name, "_jspb_proto", "_lib_proto")],
-        output_mode = "NO_PREFIX_FLAT",
-        # Need to specify this to work around bug in js_proto_library()
-        # https://github.com/bazelbuild/rules_nodejs/issues/3503
-        legacy_path = "unused",
-        deps = js_deps,
         visibility = visibility,
     )
 

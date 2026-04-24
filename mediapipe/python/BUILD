@@ -51,6 +51,11 @@ pybind_extension(
         "//mediapipe/tasks/python/core/pybind:task_runner",
         "@com_google_absl//absl/strings:str_format",
         "@stblib//:stb_image",
+        "@org_tensorflow//tensorflow/lite/kernels/internal:tensor_utils",
+        "@org_tensorflow//tensorflow/lite/kernels/internal:portable_tensor_utils",
+        "@org_tensorflow//tensorflow/lite/kernels/internal:tensor_utils_no_eigen",
+        "@org_tensorflow//tensorflow/lite/kernels/internal:sse_tensor_utils",
+        "@org_tensorflow//tensorflow/lite/kernels/internal:neon_tensor_utils",
         # Type registration.
         "//mediapipe/framework:basic_types_registration",
         "//mediapipe/framework/formats:body_rig_registration",

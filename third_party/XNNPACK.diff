@@ -1,0 +1,58 @@
+diff --git a/build_config/BUILD.bazel b/build_config/BUILD.bazel
+index 32c31381f8..917104550b 100644
+--- a/build_config/BUILD.bazel
++++ b/build_config/BUILD.bazel
+@@ -249,6 +249,16 @@ config_setting(
+     },
+ )
+ 
++config_setting(
++    name = "qnx_arm64",
++    values = {"cpu": "qnx_arm64"},
++)
++
++config_setting(
++    name = "qnx_x64",
++    values = {"cpu": "qnx_x64"},
++)
++
+ # Duummy lexan config to avoid bazel errors.
+ config_setting(
+     name = "windows_lexan",
+@@ -308,6 +318,7 @@ selects.config_setting_group(
+         ":macos_arm64",
+         ":tvos_arm64",
+         ":watchos_arm64_32",
++        ":qnx_arm64",
+     ],
+ )
+ 
+@@ -334,6 +345,7 @@ selects.config_setting_group(
+         ":windows_x86_64_clang",
+         ":windows_x86_64_mingw",
+         ":windows_x86_64_msys",
++        ":qnx_x64",
+     ],
+ )
+ 
+@@ -349,6 +361,7 @@ selects.config_setting_group(
+         ":watchos_x86_64",
+         ":windows_x86_64_clang",
+         ":windows_x86_64_mingw",
++        ":qnx_x64",
+     ],
+ )
+ 
+diff --git a/build_defs.bzl b/build_defs.bzl
+index c27265ee3d..483f1a1096 100644
+--- a/build_defs.bzl
++++ b/build_defs.bzl
+@@ -208,6 +208,8 @@ def xnnpack_cc_library(
+             "//build_config:emscripten_wasm": wasm_copts,
+             "//build_config:emscripten_wasmsimd": wasmsimd_copts,
+             "//build_config:emscripten_wasmrelaxedsimd": wasmrelaxedsimd_copts,
++            "//build_config:qnx_arm64": aarch64_copts,
++            "//build_config:qnx_x64": gcc_x86_copts,
+             "//conditions:default": [],
+         }) + select({
+             "//build_config:windows_x86_64_clang": ["/clang:" + opt for opt in gcc_copts],

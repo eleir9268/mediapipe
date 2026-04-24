@@ -1,0 +1,13 @@
+diff --git a/foreign_cc/private/framework/toolchains/mappings.bzl b/foreign_cc/private/framework/toolchains/mappings.bzl
+index d614102..809c0a3 100644
+--- a/foreign_cc/private/framework/toolchains/mappings.bzl
++++ b/foreign_cc/private/framework/toolchains/mappings.bzl
+@@ -24,7 +24,7 @@ TOOLCHAIN_MAPPINGS = [
+         exec_compatible_with = [
+             "@platforms//os:linux",
+         ],
+-        file = "@rules_foreign_cc//foreign_cc/private/framework/toolchains:linux_commands.bzl",
++        file = "@rules_foreign_cc//foreign_cc/private/framework/toolchains:freebsd_commands.bzl",
+     ),
+     _toolchain_mapping(
+         repo_name = "rules_foreign_cc_framework_toolchain_freebsd",

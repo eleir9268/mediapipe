@@ -1,5 +1,17 @@
 workspace(name = "mediapipe")
 
+# Override @python definitions.
+local_repository(
+    name = "python",
+    path = "python",
+)
+
+# Override @python_qnx definitions.
+local_repository(
+    name = "python_qnx",
+    path = "python_qnx",
+)
+
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 # Protobuf expects an //external:python_headers target
@@ -34,9 +46,9 @@ http_archive(
     patches = [
         "@//third_party:com_google_absl_windows_patch.diff",
     ],
-    sha256 = "f841f78243f179326f2a80b719f2887c38fe226d288ecdc46e2aa091e6aa43bc",
-    strip_prefix = "abseil-cpp-9687a8ea750bfcddf790372093245a1d041b21a3",
-    urls = ["https://github.com/abseil/abseil-cpp/archive//9687a8ea750bfcddf790372093245a1d041b21a3.tar.gz"],
+    sha256 = "0fa79ee7386f205988b11b821f7a4f6a3fb041458844d3f7b220a5d5a79a49bd",
+    strip_prefix = "abseil-cpp-4d9b2f51af9075a620ab40c001dc3795624835b6",
+    urls = ["https://github.com/qnx-ports/abseil-cpp/archive//4d9b2f51af9075a620ab40c001dc3795624835b6.tar.gz"],
 )
 
 http_archive(
@@ -131,10 +143,10 @@ http_archive(
 # 2020-08-21
 http_archive(
     name = "com_github_glog_glog",
-    sha256 = "8a83bf982f37bb70825df71a9709fa90ea9f4447fb3c099e1d720a439d88bad6",
-    strip_prefix = "glog-0.6.0",
+    sha256 = "6f4727dcf44bc587928da630d0ac2588b11b334c035e31f726af88ea304f6aea",
+    strip_prefix = "glog-f4189856420b56a52b64c2d871f3b1993e77ec7d",
     urls = [
-        "https://github.com/google/glog/archive/v0.6.0.tar.gz",
+        "https://github.com/google/glog/archive/f4189856420b56a52b64c2d871f3b1993e77ec7d.tar.gz",
     ],
 )
 
@@ -147,10 +159,10 @@ http_archive(
     patches = [
         "@//third_party:com_github_glog_glog.diff",
     ],
-    sha256 = "8a83bf982f37bb70825df71a9709fa90ea9f4447fb3c099e1d720a439d88bad6",
-    strip_prefix = "glog-0.6.0",
+    sha256 = "6f4727dcf44bc587928da630d0ac2588b11b334c035e31f726af88ea304f6aea",
+    strip_prefix = "glog-f4189856420b56a52b64c2d871f3b1993e77ec7d",
     urls = [
-        "https://github.com/google/glog/archive/v0.6.0.tar.gz",
+        "https://github.com/qnx-ports/glog/archive/f4189856420b56a52b64c2d871f3b1993e77ec7d.tar.gz",
     ],
 )
 
@@ -248,6 +260,12 @@ http_archive(
     sha256 = "72549a5af09ee22204904fc93d35d2a19351e32a46f26c4838dda005824e3576",
     strip_prefix = "XNNPACK-5ff876e4f88f4bec7a3ec853c366a33c8f797fb5",
     url = "https://github.com/google/XNNPACK/archive/5ff876e4f88f4bec7a3ec853c366a33c8f797fb5.zip",
+    patch_args = [
+        "-p1",
+    ],
+    patches = [
+        "@//third_party:XNNPACK.diff",
+    ],
 )
 
 # 2020-07-09
@@ -290,10 +308,10 @@ http_archive(
 
 http_archive(
     name = "cpuinfo",
-    sha256 = "e2bd8049d29dfbed675a0bc7c01947f8b8bd3f17f706b827d3f6c1e5c64dd8c3",
-    strip_prefix = "cpuinfo-8df44962d437a0477f07ba6b8843d0b6a48646a4",
+    sha256 = "62921f04770ce6bc5a686da1ca0a0efcf3d069f00a64c851b3b10496ccfadb21",
+    strip_prefix = "cpuinfo-115abd71902b58ffe5c54e8d183770bf1c7f6e24",
     urls = [
-        "https://github.com/pytorch/cpuinfo/archive/8df44962d437a0477f07ba6b8843d0b6a48646a4.zip",
+        "https://github.com/pytorch/cpuinfo/archive/115abd71902b58ffe5c54e8d183770bf1c7f6e24.zip",
     ],
 )
 
@@ -324,6 +342,9 @@ http_archive(
         # Works around Bazel issue with objc_library.
         # See https://github.com/bazelbuild/bazel/issues/19912
         "@//third_party:org_tensorflow_objc_build_fixes.diff",
+        "@//third_party:org_tensorflow_elementwise.diff",
+        "@//third_party:org_tensorflow_farmhash.diff",
+        "@//third_party:org_tensorflow_pthreadpool_deps.diff",
     ],
     sha256 = _TENSORFLOW_SHA256,
     strip_prefix = "tensorflow-%s" % _TENSORFLOW_GIT_COMMIT,
@@ -353,6 +374,7 @@ python_init_repositories(
         "3.10": "//:requirements_lock_3_10.txt",
         "3.11": "//:requirements_lock_3_11.txt",
         "3.12": "//:requirements_lock_3_12.txt",
+        "3.14": "//:requirements_lock_3_14.txt",
     },
 )
 
@@ -397,6 +419,12 @@ http_archive(
     name = "rules_foreign_cc",
     sha256 = "a2e6fb56e649c1ee79703e99aa0c9d13c6cc53c8d7a0cbb8797ab2888bbc99a3",
     strip_prefix = "rules_foreign_cc-0.12.0",
+    patch_args = [
+        "-p1",
+    ],
+    patches = [
+        "@//third_party:rules_foreign_cc_freebsd_commands.diff",
+    ],
     url = "https://github.com/bazelbuild/rules_foreign_cc/releases/download/0.12.0/rules_foreign_cc-0.12.0.tar.gz",
 )
 
@@ -481,7 +509,10 @@ http_archive(
     name = "com_google_audio_tools",
     patch_args = ["-p1"],
     # TODO: Fix this in AudioTools directly
-    patches = ["@//third_party:com_google_audio_tools_fixes.diff"],
+    patches = [
+        "@//third_party:com_google_audio_tools_fixes.diff",
+        "@//third_party:com_google_audio_tools_c99.diff",
+    ],
     repo_mapping = {"@com_github_glog_glog": "@com_github_glog_glog_no_gflags"},
     sha256 = "7d7227cc6bb1f8917a9c9013e8f3578ec681c49e20fe2fc38ba90965394de60c",
     strip_prefix = "multichannel-audio-tools-bbf15de4b7cd825d650296d21917afc07e8fe18b",
@@ -505,7 +536,10 @@ http_archive(
         "sentencepiece",
         "-p1",
     ],
-    patches = ["@//third_party:com_google_sentencepiece.diff"],
+    patches = [
+        "@//third_party:com_google_sentencepiece.diff",
+        "@//third_party:com_google_sentencepiece-qnx-no-endian_h.diff",
+    ],
     sha256 = "8409b0126ebd62b256c685d5757150cf7fcb2b92a2f2b98efb3f38fc36719754",
     strip_prefix = "sentencepiece-0.1.96",
     urls = [
@@ -710,28 +744,6 @@ libedgetpu_dependencies()
 load("@coral_crosstool//:configure.bzl", "cc_crosstool")
 
 cc_crosstool(name = "crosstool")
-
-# Node dependencies
-http_archive(
-    name = "build_bazel_rules_nodejs",
-    sha256 = "94070eff79305be05b7699207fbac5d2608054dd53e6109f7d00d923919ff45a",
-    urls = ["https://github.com/bazelbuild/rules_nodejs/releases/download/5.8.2/rules_nodejs-5.8.2.tar.gz"],
-)
-
-load("@build_bazel_rules_nodejs//:repositories.bzl", "build_bazel_rules_nodejs_dependencies")
-
-build_bazel_rules_nodejs_dependencies()
-
-# fetches nodejs, npm, and yarn
-load("@build_bazel_rules_nodejs//:index.bzl", "node_repositories", "yarn_install")
-
-node_repositories()
-
-yarn_install(
-    name = "npm",
-    package_json = "@//:package.json",
-    yarn_lock = "@//:yarn.lock",
-)
 
 # Protobuf for Node dependencies
 http_archive(
