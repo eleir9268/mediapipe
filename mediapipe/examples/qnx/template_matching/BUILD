@@ -26,7 +26,6 @@ package(default_visibility = ["//mediapipe/examples:__subpackages__"])
 cc_binary(
     name = "template_matching_cpu",
     data = [
-        "//mediapipe/graphs/template_matching:mobile_cpu.binarypb",
         "//mediapipe/models:knift_index.pb",
         "//mediapipe/models:knift_float.tflite",
         "//mediapipe/models:knift_labelmap.txt",

@@ -26,7 +26,6 @@ package(default_visibility = ["//mediapipe/examples:__subpackages__"])
 cc_binary(
     name = "object_detection_gpu",
     data = [
-        "//mediapipe/graphs/object_detection:mobile_gpu.binarypb",
         "//mediapipe/models:ssdlite_object_detection.tflite",
         "//mediapipe/models:ssdlite_object_detection_labelmap.txt",
     ],
@@ -47,7 +46,6 @@ cc_binary(
 cc_binary(
     name = "object_detection_cpu",
     data = [
-        "//mediapipe/graphs/object_detection:mobile_cpu.binarypb",
         "//mediapipe/models:ssdlite_object_detection.tflite",
         "//mediapipe/models:ssdlite_object_detection_labelmap.txt",
     ],

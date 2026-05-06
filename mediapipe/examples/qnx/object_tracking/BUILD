@@ -46,7 +46,6 @@ cc_binary(
 cc_binary(
     name = "object_tracking_gpu",
     data = [
-        "//mediapipe/graphs/tracking:mobile_gpu.binarypb",
         "//mediapipe/models:ssdlite_object_detection.tflite",
         "//mediapipe/models:ssdlite_object_detection_labelmap.txt",
     ],

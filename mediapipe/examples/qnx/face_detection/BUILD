@@ -24,7 +24,6 @@ cc_binary(
     deps = [
         "//mediapipe/examples/qnx:demo_run_graph_main",
         "//mediapipe/graphs/face_detection:mobile_calculators",
-        "//mediapipe/graphs/face_detection:face_detection_mobile_cpu.binarypb",
     ],
 )
 
@@ -42,7 +41,6 @@ cc_binary(
     deps = [
         "//mediapipe/examples/qnx:demo_run_graph_main",
         "//mediapipe/graphs/face_detection:mobile_calculators",
-        "//mediapipe/graphs/face_detection:face_detection_mobile_cpu.binarypb",
     ],
 )
 
@@ -53,6 +51,5 @@ cc_binary(
     deps = [
         "//mediapipe/examples/qnx:demo_run_graph_main_gpu",
         "//mediapipe/graphs/face_detection:mobile_calculators",
-        "//mediapipe/graphs/face_detection:face_detection_mobile_gpu.binarypb",
     ],
 )

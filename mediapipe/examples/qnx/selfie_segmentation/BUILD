@@ -38,7 +38,6 @@ cc_binary(
 cc_binary(
     name = "selfie_segmentation_gpu",
     data = [
-        "//mediapipe/graphs/selfie_segmentation:selfie_segmentation_gpu.binarypb",
         "//mediapipe/modules/selfie_segmentation:selfie_segmentation.tflite",
     ],
     deps = [

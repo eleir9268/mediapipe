@@ -39,7 +39,6 @@ cc_binary(
 cc_binary(
     name = "pose_tracking_gpu",
     data = [
-        "//mediapipe/graphs/pose_tracking:pose_tracking_gpu.binarypb",
         "//mediapipe/modules/pose_landmark:pose_landmark_full.tflite",
         "//mediapipe/modules/pose_detection:pose_detection.tflite",
     ],
