@@ -18,20 +18,20 @@ package(default_visibility = ["//mediapipe/examples:__subpackages__"])
 
 # BUILD:
 # bazel build -c opt --define MEDIAPIPE_DISABLE_GPU=1 \
-#   //mediapipe/examples/desktop/object_detection:object_detection_gpu
+#   //mediapipe/examples/desktop/object_detection:object_detection_tflite
 # RUN:
-# bazel-bin/mediapipe/examples/desktop/object_detection/object_detection_gpu \
+# bazel-bin/mediapipe/examples/desktop/object_detection/object_detection_tflite \
 #   --calculator_graph_config_file=<.../object_detection_desktop_tflite_graph.pbtxt> \
 #   --input_side_packets=input_video_path=<input video path>,output_video_path=<output video path>
 cc_binary(
-    name = "object_detection_gpu",
+    name = "object_detection_tflite",
     data = [
         "//mediapipe/models:ssdlite_object_detection.tflite",
         "//mediapipe/models:ssdlite_object_detection_labelmap.txt",
     ],
     deps = [
-        "//mediapipe/graphs/object_detection:mobile_calculators",
         "//mediapipe/examples/desktop:simple_run_graph_main",
+        "//mediapipe/graphs/object_detection:desktop_tflite_calculators",
     ],
 )
 
@@ -50,7 +50,7 @@ cc_binary(
         "//mediapipe/models:ssdlite_object_detection_labelmap.txt",
     ],
     deps = [
-        "//mediapipe/graphs/object_detection:mobile_calculators",
         "//mediapipe/examples/desktop:demo_run_graph_main",
+        "//mediapipe/graphs/object_detection:desktop_tflite_calculators",
     ],
 )

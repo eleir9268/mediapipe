@@ -46,7 +46,7 @@ cc_binary(
     data = ["//mediapipe/modules/face_landmark:face_landmark_with_attention.tflite"],
     deps = [
         "//mediapipe/examples/qnx:demo_run_graph_main",
-        "//mediapipe/graphs/face_mesh:desktop_calculators",
+        "//mediapipe/graphs/face_mesh:desktop_live_calculators",
     ],
 )
 

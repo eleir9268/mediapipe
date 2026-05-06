@@ -76,20 +76,20 @@ const std::vector<EGLint> config_attrib_list = {
   EGL_ALPHA_SIZE,               8,
 
   EGL_NONE,
-}
+};
 
 const std::vector<EGLint> context_attrib_list = {
   EGL_CONTEXT_CLIENT_VERSION,   2,
   EGL_NONE,
-}
+};
 
 const std::vector<EGLint> surface_attrib_list = {
-  EGL_RENDER_BUFFER,            EGL_BACK_BUFFER
+  EGL_RENDER_BUFFER,            EGL_BACK_BUFFER,
   EGL_NONE,
-}
+};
 
-const std::vector<std::pair<std::string, GLuint>> vertex_attrib_list = {
-}
+//const std::vector<std::pair<std::string, GLuint>> vertex_attrib_list = {
+//};
 
 typedef struct mp_gl_info {
   bool initialized;
@@ -195,46 +195,54 @@ void CameraProduceData(
   // Conversions taken from https://gitlab.com/qnx/projects/ai-camera-app/-/blob/main/FaceDetection/QSFCameraIntake.cpp
   switch(ci.frametype) {
   case CAMERA_FRAMETYPE_YCBYCR:
-    cv::Mat frame_raw(
-        ci.height,
-        ci.width, CV_8UC2,
-        buffer_p->framebuf,
-        ci.width * 2);
-    cvtColor(frame_raw, frame, cv::COLOR_YUV2RGB_YUY2);
+    {
+      cv::Mat frame_raw(
+          ci.height,
+          ci.width, CV_8UC2,
+          buffer_p->framebuf,
+          ci.width * 2);
+      cv::cvtColor(frame_raw, frame, cv::COLOR_YUV2RGB_YUY2);
+    }
     break;
   case CAMERA_FRAMETYPE_CBYCRY:
-    cv::Mat frame_raw(
-        ci.height,
-        ci.width, CV_8UC2,
-        buffer_p->framebuf,
-        ci.width * 2);
-    cvtColor(frame_raw, frame, cv::COLOR_YUV2RGB_UYVY);
+    {
+      cv::Mat frame_raw(
+          ci.height,
+          ci.width, CV_8UC2,
+          buffer_p->framebuf,
+          ci.width * 2);
+      cv::cvtColor(frame_raw, frame, cv::COLOR_YUV2RGB_UYVY);
+    }
     break;
   case CAMERA_FRAMETYPE_RGB888:
-    frame = cv::Mat(ci.height, ci.width, CV_8UC3);
+    frame.create(ci.height, ci.width, CV_8UC3);
     memcpy(
         reinterpret_cast<char*>(frame.data),
         reinterpret_cast<char*>(buffer_p->framebuf),
         ci.height * ci.width * 3);
     break;
   case CAMERA_FRAMETYPE_RGB8888:
-    const int from_to[8] { 0, 2, 1, 1, 2, 0, 3, 3 };
-    cv::Mat frame_raw_argb(
-        ci.height,
-        ci.width, CV_8UC4,
-        buffer_p->framebuf,
-        ci.width * 4);
-    cv::Mat frame_raw_bgra(argbImage.size(), argbImage.type());
-    cv::mixChannels(&argbImage, 1, &bgraImage, 1, from_to, 4);
-    cvtColor(frame_raw_bgra, frame, COLOR_RGBA2RGB);
+    {
+      const int from_to[8] { 0, 2, 1, 1, 2, 0, 3, 3 };
+      cv::Mat frame_raw_argb(
+          ci.height,
+          ci.width, CV_8UC4,
+          buffer_p->framebuf,
+          ci.width * 4);
+      cv::Mat frame_raw_bgra(frame_raw_argb.size(), frame_raw_argb.type());
+      cv::mixChannels(&frame_raw_argb, 1, &frame_raw_bgra, 1, from_to, 4);
+      cv::cvtColor(frame_raw_bgra, frame, cv::COLOR_RGBA2RGB);
+    }
     break;
   case CAMERA_FRAMETYPE_BGR8888:
-    cv::Mat frame_raw(
-        ci.height,
-        ci.width, CV_8UC4,
-        buffer_p->framebuf,
-        ci.width * 4);
-    cvtColor(frame_raw, frame, COLOR_BGRA2RGB);
+    {
+      cv::Mat frame_raw(
+          ci.height,
+          ci.width, CV_8UC4,
+          buffer_p->framebuf,
+          ci.width * 4);
+      cv::cvtColor(frame_raw, frame, cv::COLOR_BGRA2RGB);
+    }
     break;
   default:
     ABSL_LOG(ERROR) << "The camera frametype is invalid.";

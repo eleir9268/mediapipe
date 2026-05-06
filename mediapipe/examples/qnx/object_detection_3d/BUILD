@@ -38,7 +38,7 @@ cc_binary(
     ],
     deps = [
         "//mediapipe/examples/qnx:simple_run_graph_main",
-        "//mediapipe/graphs/object_detection_3d:mobile_calculators",
+        "//mediapipe/graphs/object_detection_3d:desktop_cpu_calculators",
     ],
 )
 

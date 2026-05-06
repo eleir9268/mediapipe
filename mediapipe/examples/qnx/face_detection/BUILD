@@ -23,7 +23,7 @@ cc_binary(
     ],
     deps = [
         "//mediapipe/examples/qnx:demo_run_graph_main",
-        "//mediapipe/graphs/face_detection:mobile_calculators",
+        "//mediapipe/graphs/face_detection:face_detection_full_range_desktop_live_deps",
     ],
 )
 
@@ -40,7 +40,7 @@ cc_binary(
     data = ["//mediapipe/modules/face_detection:face_detection_short_range.tflite"],
     deps = [
         "//mediapipe/examples/qnx:demo_run_graph_main",
-        "//mediapipe/graphs/face_detection:mobile_calculators",
+        "//mediapipe/graphs/face_detection:desktop_live_calculators",
     ],
 )
 
@@ -50,6 +50,6 @@ cc_binary(
     data = ["//mediapipe/modules/face_detection:face_detection_short_range.tflite"],
     deps = [
         "//mediapipe/examples/qnx:demo_run_graph_main_gpu",
-        "//mediapipe/graphs/face_detection:mobile_calculators",
+        "//mediapipe/graphs/face_detection:desktop_live_gpu_calculators",
     ],
 )

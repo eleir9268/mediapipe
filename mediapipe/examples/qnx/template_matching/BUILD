@@ -18,13 +18,13 @@ package(default_visibility = ["//mediapipe/examples:__subpackages__"])
 
 # BUILD:
 # bazel build -c opt --define MEDIAPIPE_DISABLE_GPU=1 \
-#   //mediapipe/examples/qnx/template_matching:template_matching_cpu
+#   //mediapipe/examples/qnx/template_matching:template_matching_tflite
 # RUN:
-# bazel-bin/mediapipe/examples/qnx/template_matching/template_matching_cpu \
+# bazel-bin/mediapipe/examples/qnx/template_matching/template_matching_tflite \
 #   --calculator_graph_config_file=<.../template_matching_desktop.pbtxt> \
 #   --input_side_packets=input_video_path=<input video path>,output_video_path=<output video path>
 cc_binary(
-    name = "template_matching_cpu",
+    name = "template_matching_tflite",
     data = [
         "//mediapipe/models:knift_index.pb",
         "//mediapipe/models:knift_float.tflite",
@@ -32,6 +32,6 @@ cc_binary(
     ]
     deps = [
         "//mediapipe/examples/qnx:simple_run_graph_main",
-        "//mediapipe/graphs/template_matching:mobile_calculators",
+        "//mediapipe/graphs/template_matching:desktop_calculators",
     ],
 )
