@@ -412,9 +412,16 @@ absl::Status InitCameraSink(mp_camera_info_t &ci, const bool save_video) {
 failure:
   if (ci.handle != static_cast<camera_handle_t>(-1)) {
     camera_close(ci.handle);
-    ci.handle = -1;
+    ci.handle = static_cast<camera_handle_t>(-1);
   }
   return ret;
+}
+
+void TeardownCameraSink(mp_camera_info_t &ci) {
+  if (ci.initialized) {
+    camera_close(ci.handle);
+    ci.initialized = false;
+  }
 }
 
 absl::Status InitScreenWindow(mp_screen_info_t &si) {
@@ -938,6 +945,7 @@ absl::Status RunMPPGraph() {
   ABSL_LOG(INFO) << "Shutting down.";
   TeardownGLContext(gli);
   TeardownScreenWindow(si);
+  TeardownCameraSink(ci);
   if (writer.isOpened()) writer.release();
   MP_RETURN_IF_ERROR(graph.CloseInputStream(kInputStream));
   return graph.WaitUntilDone();
