@@ -873,7 +873,7 @@ absl::Status RunMPPGraph() {
 
   ABSL_LOG(INFO) << "Initialize the camera or load the video.";
   mp_camera_info_t ci = {};
-  ret = InitCameraSink(si, save_video);
+  ret = InitCameraSink(ci, save_video);
   if (!ret.ok()) {
     return ret;
   }
