@@ -190,7 +190,7 @@ static void CameraStatusCallback(camera_handle_t handle, camera_devstatus_t stat
 void CameraProduceData(
   mp_camera_info_t &ci,
   camera_buffer_t* buffer_p) {
-  cv::Mat frame();
+  cv::Mat frame;
 
   // Conversions taken from https://gitlab.com/qnx/projects/ai-camera-app/-/blob/main/FaceDetection/QSFCameraIntake.cpp
   switch(ci.frametype) {
@@ -261,7 +261,7 @@ void CameraProduceData(
 cv::Mat CameraConsumeData(mp_camera_info_t &ci) {
   cv::Mat ret;
   std::unique_lock data_lk(ci.data_m);
-  cv.wait(data_lk, [&]() { return ci.data_ready; });
+  data_cv.wait(data_lk, [&]() { return ci.data_ready; });
 
   ret = ci.data;
   ci.data_ready = false;
@@ -302,8 +302,8 @@ absl::Status InitCameraSink(mp_camera_info_t &ci, const bool save_video) {
   cam_ret = camera_open(ci.unit, CAMERA_MODE_RO | CAMERA_MODE_ROLL, &ci.handle);
   if (cam_ret != CAMERA_EOK) {
     ABSL_LOG(ERROR) << "Failed to open camera. 'camera_open' returned error "
-      << cam_ret << " (" << strerror(cam_ret) ").";
-    ret = absl::ErrnoToStatusCode(cam_ret);
+      << cam_ret << " (" << strerror(cam_ret) << ").";
+    ret = absl::ErrnoToStatus(cam_ret, "Failed to open camera.");
     goto failure;
   }
 
@@ -341,7 +341,7 @@ absl::Status InitCameraSink(mp_camera_info_t &ci, const bool save_video) {
     ABSL_LOG(ERROR) << "Failed to set CAMERA_IMGPROP_FORMAT property. "
       << "'camera_set_vf_property' returned error " << cam_ret << " ("
       << strerror(cam_ret) ").";
-    ret = absl::ErrnoToStatusCode(cam_ret);
+    ret = absl::ErrnoToStatus(cam_ret, "Failed to set camera property.");
     goto failure;
   }
 
@@ -351,15 +351,7 @@ absl::Status InitCameraSink(mp_camera_info_t &ci, const bool save_video) {
     ABSL_LOG(ERROR) << "Failed to set CAMERA_IMGPROP_CREATEWINDOW property. "
       << "'camera_set_vf_property' returned error " << cam_ret << " ("
       << strerror(cam_ret) ").";
-    ret = absl::ErrnoToStatusCode(cam_ret);
-    goto failure;
-  }
-
-  // Check if we can record.
-  if (!camera_is_roll_format_supported(ci.handle, ci.frametype)) {
-    ABSL_LOG(ERROR) << "Camera cannot record with frametype " << ci.frametype
-      << ".";
-    ret = absl::ErrnoToStatusCode(ENOTSUP);
+    ret = absl::ErrnoToStatus(cam_ret, "Failed to set camera property.");
     goto failure;
   }
 
@@ -367,7 +359,7 @@ absl::Status InitCameraSink(mp_camera_info_t &ci, const bool save_video) {
   if (cam_ret != CAMERA_EOK) {
     ABSL_LOG(ERROR) << "Failed to start viewfinder. 'camera_start_viewfinder' "
       << "returned error " cam_ret << " (" << strerror(cam_ret) ").";
-    ret = absl::ErrnoToStatusCode(cam_ret);
+    ret = absl::ErrnoToStatus(cam_ret, "Failed to start viewfinder.");
     goto failure;
   }
 
@@ -376,9 +368,9 @@ absl::Status InitCameraSink(mp_camera_info_t &ci, const bool save_video) {
     cam_ret = camera_set_vf_property(ci.handle, CAMERA_IMGPROP_FRAMERATE, ci.framerate);
     if (cam_ret != CAMERA_EOK) {
       ABSL_LOG(ERROR) << "Failed to set CAMERA_IMGPROP_FRAMERATE property. "
-        << "'camera_set_vf_property' returned error " cam_ret << " ("
+        << "'camera_set_vf_property' returned error " << cam_ret << " ("
         << strerror(cam_ret) ").";
-      ret = absl::ErrnoToStatusCode(cam_ret);
+      ret = absl::ErrnoToStatus(cam_ret, "Failed to set camera property.");
       goto failure;
     }
 
@@ -388,7 +380,7 @@ absl::Status InitCameraSink(mp_camera_info_t &ci, const bool save_video) {
       ABSL_LOG(ERROR) << "Failed to set CAMERA_IMGPROP_WIDTH property. "
         << "'camera_set_vf_property' returned error " cam_ret << " ("
         << strerror(cam_ret) ").";
-      ret = absl::ErrnoToStatusCode(cam_ret);
+      ret = absl::ErrnoToStatus(cam_ret, "Failed to set camera property.");
       goto failure;
     }
 
@@ -398,7 +390,7 @@ absl::Status InitCameraSink(mp_camera_info_t &ci, const bool save_video) {
       ABSL_LOG(ERROR) << "Failed to set CAMERA_IMGPROP_HEIGHT property. "
         << "'camera_set_vf_property' returned error " cam_ret << " ("
         << strerror(cam_ret) ").";
-      ret = absl::ErrnoToStatusCode(cam_ret);
+      ret = absl::ErrnoToStatus(cam_ret, "Failed to set camera property.");
       goto failure;
     }
   } else {
@@ -408,7 +400,7 @@ absl::Status InitCameraSink(mp_camera_info_t &ci, const bool save_video) {
         << "CAMERA_IMGPROP_HEIGHT, and CAMERA_IMGPROP_FRAMERATE properties. "
         << "'camera_get_vf_property' returned error " cam_ret << " ("
         << strerror(cam_ret) ").";
-      ret = absl::ErrnoToStatusCode(cam_ret);
+      ret = absl::ErrnoToStatus(cam_ret, "Failed to get camera properties.");
       goto failure;
     }
   }
@@ -448,17 +440,17 @@ absl::Status InitScreenWindow(mp_screen_info_t &si) {
 
   // Allocate screen handles.
   if (screen_create_context(&si.context, 0) < 0) {
-    ret = absl::ErrnoToStatusCode(errno);
+    ret = absl::ErrnoToStatus(errno, "Failed to create screen context.");
     goto failure;
   }
 
   if (screen_create_event(&si.event) < 0) {
-    ret = absl::ErrnoToStatusCode(errno);
+    ret = absl::ErrnoToStatus(errno, "Failed to create screen event.");
     goto failure;
   }
 
   if (screen_create_window(&si.window, si.context) < 0) {
-    ret = absl::ErrnoToStatusCode(errno);
+    ret = absl::ErrnoToStatus(errno, "Failed to create screen window.");
     goto failure;
   }
 
@@ -466,30 +458,30 @@ absl::Status InitScreenWindow(mp_screen_info_t &si) {
   // display.
   screen_display_p = (screen_display_t *) malloc(sizeof(screen_display_t));
   if (screen_display_p == NULL) {
-    ret = absl::ErrnoToStatusCode(errno);
+    ret = absl::ErrnoToStatus(errno, "Failed to allocate screen display.");
     goto failure;
   }
 
   if (screen_get_window_property_pv(si.window, SCREEN_PROPERTY_DISPLAY, (void **) &screen_display_p) < 0) {
-    ret = absl::ErrnoToStatusCode(errno);
+    ret = absl::ErrnoToStatus(errno, "Failed to get screen display.");
     goto failure;
   }
 
   if (screen_get_display_property_iv(*screen_display_p, SCREEN_PROPERTY_SIZE, si.size) < 0) {
-    ret = absl::ErrnoToStatusCode(errno);
+    ret = absl::ErrnoToStatus(errno, "Failed to get screen display size.");
     goto failure;
   }
 
   ABSL_LOG(INFO) << "Defaulting to fullscreen window size of: ("
     << si.size[0] << ", " << si.size[1] << ")";
   if (screen_set_window_property_iv(si.window, SCREEN_PROPERTY_SOURCE_SIZE, si.size) < 0) {
-    ret = absl::ErrnoToStatusCode(errno);
+    ret = absl::ErrnoToStatus(errno, "Failed to set window source size.");
     goto failure;
   }
 
   usage = SCREEN_USAGE_OPENGL_ES2 | SCREEN_USAGE_OPENGL_ES3;
   if (screen_set_window_property_iv(impl->window, SCREEN_PROPERTY_USAGE, &usage) < 0) {
-    ret = absl::ErrnoToStatusCode(errno);
+    ret = absl::ErrnoToStatus(errno, "Failed to set window usage.");
     goto failure;
   }
 
