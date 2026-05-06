@@ -97,10 +97,13 @@ typedef struct mp_gl_info {
   EGLConfig config;
   EGLContext context;
   EGLSurface surface;
+#if 0
   GLuint vert_shader;
   GLuint frag_shader;
   GLuint program;
+#endif
   GLuint framebuffer;
+  GLuint texture;
 } mp_gl_info_t;
 
 constexpr char kInputStream[] = "input_video";
@@ -428,6 +431,7 @@ void TeardownCameraSink(mp_camera_info_t &ci) {
 
 absl::Status InitScreenWindow(mp_screen_info_t &si) {
   screen_display_t *screen_display_p = nullptr;
+  int usage;
   absl::Status ret = absl::OkStatus();
 
   if (si.initialized) {
@@ -436,9 +440,9 @@ absl::Status InitScreenWindow(mp_screen_info_t &si) {
 
   memset(&si, 0, sizeof(mp_screen_info_t));
   // These are opaque pointer types. -1 should be the safest value.
-  si.context = static_cast<screen_context_t>(-1);
-  si.event = static_cast<screen_event_t>(-1);
-  si.window = static_cast<screen_window_t>(-1);
+  si.context = (screen_context_t) -1;
+  si.event = (screen_event_t) -1;
+  si.window = (screen_window_t) -1;
 
   // Allocate screen handles.
   if (screen_create_context(&si.context, 0) < 0) {
@@ -498,17 +502,17 @@ failure:
   if (screen_display_p != nullptr) {
     free(screen_display_p);
   }
-  if (si.window != static_cast<screen_window_t>(-1)) {
+  if (si.window != (screen_window_t) -1) {
     screen_destroy_window(si.window);
-    si.window = static_cast<screen_window_t>(-1);
+    si.window = (screen_window_t) -1;
   }
-  if (si.event != static_cast<screen_event_t>(-1)) {
+  if (si.event != (screen_event_t) -1) {
     screen_destroy_event(si.event);
-    si.event = static_cast<screen_event_t>(-1);
+    si.event = (screen_event_t) -1;
   }
-  if (si.context != static_cast<screen_context_t>(-1)) {
+  if (si.context != (screen_context_t) -1) {
     screen_destroy_context(si.context);
-    si.context = static_cast<screen_context_t>(-1);
+    si.context = (screen_context_t) -1);
   }
   return ret;
 }
@@ -612,26 +616,27 @@ absl::Status InitGLPipeline(
   GLint infoLen = 0;
   absl::Status ret = absl::OkStatus();
 
+#if 0
   // Create and attach shaders.
   std::ifstream vert_shader_f(vert_shader_src);
   std::stringstream buffer;
   buffer << vert_shader_f.rdbuf();
-  //gli.vert_shader = LoadGLShader(GL_VERTEX_SHADER, buffer.str());
-  //if (!gli.vert_shader) {
-  //  ABSL_LOG(ERROR) << "Failed to create vertex shader.";
-  //  ret = absl::UnknownError("Failed to create vertex shader.");
-  //  goto failure;
-  //}
+  gli.vert_shader = LoadGLShader(GL_VERTEX_SHADER, buffer.str());
+  if (!gli.vert_shader) {
+    ABSL_LOG(ERROR) << "Failed to create vertex shader.";
+    ret = absl::UnknownError("Failed to create vertex shader.");
+    goto failure;
+  }
 
   std::ifstream frag_shader_f(frag_shader_src);
   buffer.str(std::string());
   buffer << frag_shader_f.rdbuf();
-  //gli.frag_shader = LoadGLShader(GL_FRAGMENT_SHADER, buffer.str());
-  //if (!gli.frag_shader) {
-  //  ABSL_LOG(ERROR) << "Failed to create fragment shader.";
-  //  ret = absl::UnknownError("Failed to create fragment shader.");
-  //  goto failure;
-  //}
+  gli.frag_shader = LoadGLShader(GL_FRAGMENT_SHADER, buffer.str());
+  if (!gli.frag_shader) {
+    ABSL_LOG(ERROR) << "Failed to create fragment shader.";
+    ret = absl::UnknownError("Failed to create fragment shader.");
+    goto failure;
+  }
 
   gli.program = glCreateProgram();
   if (gli.program == 0) {
@@ -640,21 +645,21 @@ absl::Status InitGLPipeline(
     ret = absl::UnknownError("Failed to link GL program.");
     goto failure;
   }
-  //glAttachShader(gli.program, gli.vert_shader);
-  //glAttachShader(gli.program, gli.frag_shader);
+  glAttachShader(gli.program, gli.vert_shader);
+  glAttachShader(gli.program, gli.frag_shader);
 
   // Bind any attributes to the vertex shader
-  //for (const auto &attrib : vertex_attrib_list) {
-  //  const std::string id = attrib.first;
-  //  const GLuint location = attrib.second;
-  //  glBindAttribLocation(gli.program, id, location);
-  //  if ((glint = glGetError())) {
-  //    ABSL_LOG(ERROR) << "Failed to bind GL attribute " << id << " at location "
-  //      << location << ". 'glBindAttribLocation' failed with error " << glint << ".";
-  //    ret = absl::UnknownError("Failed to bind GL attribute.");
-  //    goto failure;
-  //  }
-  //}
+  for (const auto &attrib : vertex_attrib_list) {
+    const std::string id = attrib.first;
+    const GLuint location = attrib.second;
+    glBindAttribLocation(gli.program, id, location);
+    if ((glint = glGetError())) {
+      ABSL_LOG(ERROR) << "Failed to bind GL attribute " << id << " at location "
+        << location << ". 'glBindAttribLocation' failed with error " << glint << ".";
+      ret = absl::UnknownError("Failed to bind GL attribute.");
+      goto failure;
+    }
+  }
 
   // Link the program
   glLinkProgram(gli.program);
@@ -687,6 +692,7 @@ absl::Status InitGLPipeline(
     ret = absl::UnknownError("Failed to use GL program.");
     goto failure;
   }
+#endif
 
   glActiveTexture(GL_TEXTURE0);
 
@@ -749,18 +755,20 @@ failure:
     glDeleteFramebuffers(1, &gli.framebuffer);
     gli.framebuffer = 0;
   }
+#if 0
   if (gli.program != 0) {
     glDeleteProgram(gli.program);
     gli.program = 0;
   }
-  //if (gli.vert_shader != 0) {
-  //  glDeleteShader(gli.vert_shader);
-  //  gli.vert_shader = 0;
-  //}
-  //if (gli.frag_shader != 0) {
-  //  glDeleteShader(gli.frag_shader);
-  //  gli.frag_shader = 0;
-  //}
+  if (gli.vert_shader != 0) {
+    glDeleteShader(gli.vert_shader);
+    gli.vert_shader = 0;
+  }
+  if (gli.frag_shader != 0) {
+    glDeleteShader(gli.frag_shader);
+    gli.frag_shader = 0;
+  }
+#endif
   return ret;
 }
 
@@ -833,9 +841,11 @@ failure:
 void TeardownGLContext(mp_gl_info_t &gli) {
   if (gli.initialized) {
     glDeleteFramebuffers(1, &gli.framebuffer);
+#if 0
     glDeleteProgram(gli.program);
-    //glDeleteShader(gli.vert_shader);
-    //glDeleteShader(gli.frag_shader);
+    glDeleteShader(gli.vert_shader);
+    glDeleteShader(gli.frag_shader);
+#endif
     eglDestroySurface(gli.display, gli.surface);
     eglDestroyContext(gli.display, gli.context);
     eglTerminate(gli.display);
