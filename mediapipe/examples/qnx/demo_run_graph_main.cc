@@ -261,7 +261,7 @@ void CameraProduceData(
 cv::Mat CameraConsumeData(mp_camera_info_t &ci) {
   cv::Mat ret;
   std::unique_lock data_lk(ci.data_m);
-  data_cv.wait(data_lk, [&]() { return ci.data_ready; });
+  ci.data_cv.wait(data_lk, [&]() { return ci.data_ready; });
 
   ret = ci.data;
   ci.data_ready = false;
@@ -280,6 +280,8 @@ static void CameraViewfinderCallback(
 }
 
 absl::Status InitCameraSink(mp_camera_info_t &ci, const bool save_video) {
+  std::vector<camera_unit_t> units;
+  std::vector<camera_frametype_t> frametypes;
   int cam_ret;
   absl::Status ret = absl::OkStatus();
 
@@ -291,7 +293,7 @@ absl::Status InitCameraSink(mp_camera_info_t &ci, const bool save_video) {
   ci.frametype = CAMERA_FRAMETYPE_UNSPECIFIED;
   ci.handle = static_cast<camera_handle_t>(-1);
 
-  std::vector<camera_unit_t> units = QueryCameraUnits();
+  units = QueryCameraUnits();
   if (units.empty()) {
     ABSL_LOG(ERROR) << "Failed to find any camera units.";
     ret = absl::UnknownError("Failed to find any camera units.");
@@ -308,7 +310,7 @@ absl::Status InitCameraSink(mp_camera_info_t &ci, const bool save_video) {
   }
 
   // Choose an appropriate frametype.
-  std::vector<camera_frametype_t> frametypes = QueryCameraFrametypes(ci);
+  frametypes = QueryCameraFrametypes(ci);
   if (frametypes.empty()) {
     ABSL_LOG(ERROR) << "Failed to find any camera frametypes.";
     ret = absl::UnknownError("Failed to find any camera frametypes.");
@@ -340,7 +342,7 @@ absl::Status InitCameraSink(mp_camera_info_t &ci, const bool save_video) {
   if (cam_ret != CAMERA_EOK) {
     ABSL_LOG(ERROR) << "Failed to set CAMERA_IMGPROP_FORMAT property. "
       << "'camera_set_vf_property' returned error " << cam_ret << " ("
-      << strerror(cam_ret) ").";
+      << strerror(cam_ret) << ").";
     ret = absl::ErrnoToStatus(cam_ret, "Failed to set camera property.");
     goto failure;
   }
@@ -350,7 +352,7 @@ absl::Status InitCameraSink(mp_camera_info_t &ci, const bool save_video) {
   if (cam_ret != CAMERA_EOK) {
     ABSL_LOG(ERROR) << "Failed to set CAMERA_IMGPROP_CREATEWINDOW property. "
       << "'camera_set_vf_property' returned error " << cam_ret << " ("
-      << strerror(cam_ret) ").";
+      << strerror(cam_ret) << ").";
     ret = absl::ErrnoToStatus(cam_ret, "Failed to set camera property.");
     goto failure;
   }
@@ -358,7 +360,7 @@ absl::Status InitCameraSink(mp_camera_info_t &ci, const bool save_video) {
   cam_ret = camera_start_viewfinder(ci.handle, CameraViewfinderCallback, CameraStatusCallback, &ci);
   if (cam_ret != CAMERA_EOK) {
     ABSL_LOG(ERROR) << "Failed to start viewfinder. 'camera_start_viewfinder' "
-      << "returned error " cam_ret << " (" << strerror(cam_ret) ").";
+      << "returned error " << cam_ret << " (" << strerror(cam_ret) << ").";
     ret = absl::ErrnoToStatus(cam_ret, "Failed to start viewfinder.");
     goto failure;
   }
@@ -369,7 +371,7 @@ absl::Status InitCameraSink(mp_camera_info_t &ci, const bool save_video) {
     if (cam_ret != CAMERA_EOK) {
       ABSL_LOG(ERROR) << "Failed to set CAMERA_IMGPROP_FRAMERATE property. "
         << "'camera_set_vf_property' returned error " << cam_ret << " ("
-        << strerror(cam_ret) ").";
+        << strerror(cam_ret) << ").";
       ret = absl::ErrnoToStatus(cam_ret, "Failed to set camera property.");
       goto failure;
     }
@@ -378,8 +380,8 @@ absl::Status InitCameraSink(mp_camera_info_t &ci, const bool save_video) {
     cam_ret = camera_set_vf_property(ci.handle, CAMERA_IMGPROP_WIDTH, ci.width);
     if (cam_ret != CAMERA_EOK) {
       ABSL_LOG(ERROR) << "Failed to set CAMERA_IMGPROP_WIDTH property. "
-        << "'camera_set_vf_property' returned error " cam_ret << " ("
-        << strerror(cam_ret) ").";
+        << "'camera_set_vf_property' returned error " << cam_ret << " ("
+        << strerror(cam_ret) << ").";
       ret = absl::ErrnoToStatus(cam_ret, "Failed to set camera property.");
       goto failure;
     }
@@ -388,8 +390,8 @@ absl::Status InitCameraSink(mp_camera_info_t &ci, const bool save_video) {
     cam_ret = camera_set_vf_property(ci.handle, CAMERA_IMGPROP_HEIGHT, ci.height);
     if (cam_ret != CAMERA_EOK) {
       ABSL_LOG(ERROR) << "Failed to set CAMERA_IMGPROP_HEIGHT property. "
-        << "'camera_set_vf_property' returned error " cam_ret << " ("
-        << strerror(cam_ret) ").";
+        << "'camera_set_vf_property' returned error " << cam_ret << " ("
+        << strerror(cam_ret) << ").";
       ret = absl::ErrnoToStatus(cam_ret, "Failed to set camera property.");
       goto failure;
     }
@@ -398,14 +400,14 @@ absl::Status InitCameraSink(mp_camera_info_t &ci, const bool save_video) {
     if (cam_ret != CAMERA_EOK) {
       ABSL_LOG(ERROR) << "Failed to get CAMERA_IMGPROP_WIDTH, "
         << "CAMERA_IMGPROP_HEIGHT, and CAMERA_IMGPROP_FRAMERATE properties. "
-        << "'camera_get_vf_property' returned error " cam_ret << " ("
-        << strerror(cam_ret) ").";
+        << "'camera_get_vf_property' returned error " << cam_ret << " ("
+        << strerror(cam_ret) << ").";
       ret = absl::ErrnoToStatus(cam_ret, "Failed to get camera properties.");
       goto failure;
     }
   }
 
-  ci.initiailized = true;
+  ci.initialized = true;
 
   return ret;
 
@@ -607,6 +609,7 @@ absl::Status InitGLPipeline(
   mp_gl_info &gli,
   const std::string vert_shader_src, const std::string frag_shader_src) {
   GLint glint = 0;
+  GLint infoLen = 0;
   absl::Status ret = absl::OkStatus();
 
   // Create and attach shaders.
@@ -663,7 +666,6 @@ absl::Status InitGLPipeline(
   }
   glGetProgramiv(gli.program, GL_LINK_STATUS, &glint);
   if (!glint) {
-    GLint infoLen = 0;
     glGetProgramiv(gli.program, GL_INFO_LOG_LENGTH, &infoLen);
     if(infoLen > 1)
     {
@@ -763,6 +765,7 @@ failure:
 }
 
 absl::Status InitGLContext(mp_gl_info_t &gli, const mp_screen_info_t &si) {
+  std::vector<EGLConfig> configs;
   absl::Status ret = absl::OkStatus();
 
   if (gli.initialized) {
@@ -774,7 +777,7 @@ absl::Status InitGLContext(mp_gl_info_t &gli, const mp_screen_info_t &si) {
   gli.display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
   eglInitialize(gli.display, nullptr, nullptr);
 
-  std::vector<EGLConfig> configs = QueryEGLConfigs(gli);
+  configs = QueryEGLConfigs(gli);
   if (configs.empty()) {
     ABSL_LOG(ERROR) << "Failed to find an appropriate EGL config.";
     ret = absl::UnknownError("Failed to find an appropriate EGL config.");
