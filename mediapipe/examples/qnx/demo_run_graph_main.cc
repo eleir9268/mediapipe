@@ -486,7 +486,7 @@ absl::Status InitScreenWindow(mp_screen_info_t &si) {
   }
 
   usage = SCREEN_USAGE_OPENGL_ES2 | SCREEN_USAGE_OPENGL_ES3;
-  if (screen_set_window_property_iv(impl->window, SCREEN_PROPERTY_USAGE, &usage) < 0) {
+  if (screen_set_window_property_iv(si.window, SCREEN_PROPERTY_USAGE, &usage) < 0) {
     ret = absl::ErrnoToStatus(errno, "Failed to set window usage.");
     goto failure;
   }
@@ -512,7 +512,7 @@ failure:
   }
   if (si.context != (screen_context_t) -1) {
     screen_destroy_context(si.context);
-    si.context = (screen_context_t) -1);
+    si.context = (screen_context_t) -1;
   }
   return ret;
 }
@@ -872,18 +872,32 @@ absl::Status RunMPPGraph() {
   const bool save_video = !absl::GetFlag(FLAGS_output_video_path).empty();
 
   ABSL_LOG(INFO) << "Initialize the camera or load the video.";
+  mp_camera_info_t ci = {};
+  ret = InitCameraSink(si, save_video);
+  if (!ret.ok()) {
+    return ret;
+  }
+#if 0
+  // FIXME: Add this!
+  const bool load_video = !absl::GetFlag(FLAGS_input_video_path).empty();
+  if (load_video) {
+    capture.open(absl::GetFlag(FLAGS_input_video_path));
+  } else {
+    capture.open(0);
+  }
+#endif
 
   cv::VideoWriter writer;
 
   ABSL_LOG(INFO) << "Initialize the screen window.";
   mp_screen_info_t si = {};
-  ret = InitScreenWindow(&si);
+  ret = InitScreenWindow(si);
   if (!ret.ok()) {
     return ret;
   }
 
-  mp_gles_info_t gli = {};
-  ret = InitGLContext(&gli);
+  mp_gl_info_t gli = {};
+  ret = InitGLContext(gli, si);
   if (!ret.ok()) {
     return ret;
   }
@@ -900,16 +914,25 @@ absl::Status RunMPPGraph() {
     // The frame is already in the expected format.
     cv::Mat camera_frame = CameraConsumeData(ci);
     if (camera_frame.empty()) {
+#if 0
       if (!load_video) {
         ABSL_LOG(INFO) << "Ignore empty frames from camera.";
         continue;
       }
       ABSL_LOG(INFO) << "Empty frame, end of video reached.";
       break;
+#else
+      ABSL_LOG(INFO) << "Ignore empty frames from camera.";
+      continue;
+#endif
     }
+#if 0
     if (!load_video) {
       cv::flip(camera_frame, camera_frame, /*flipcode=HORIZONTAL*/ 1);
     }
+#else
+    cv::flip(camera_frame, camera_frame, /*flipcode=HORIZONTAL*/ 1);
+#endif
 
     // Wrap Mat into an ImageFrame.
     auto input_frame = absl::make_unique<mediapipe::ImageFrame>(
@@ -938,7 +961,7 @@ absl::Status RunMPPGraph() {
         ABSL_LOG(INFO) << "Prepare video writer.";
         writer.open(absl::GetFlag(FLAGS_output_video_path),
                     mediapipe::fourcc('a', 'v', 'c', '1'),  // .mp4
-                    capture.get(cv::CAP_PROP_FPS), output_frame_mat.size());
+                    ci.framerate, output_frame_mat.size());
         RET_CHECK(writer.isOpened());
       }
       writer.write(output_frame_mat);
