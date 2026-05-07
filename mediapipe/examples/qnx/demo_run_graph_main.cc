@@ -47,11 +47,7 @@ typedef struct mp_camera_info {
   bool initialized;
   camera_unit_t unit;
   camera_handle_t handle;
-  camera_frametype_t frametype;
   double framerate;
-  unsigned int height;
-  unsigned int width;
-  unsigned int size;
   std::mutex data_m;
   std::condition_variable data_cv;
   bool data_ready;
@@ -196,42 +192,51 @@ void CameraProduceData(
   cv::Mat frame;
 
   // Conversions taken from https://gitlab.com/qnx/projects/ai-camera-app/-/blob/main/FaceDetection/QSFCameraIntake.cpp
-  switch(ci.frametype) {
+  switch(buffer_p->frametype) {
+  case CAMERA_FRAMETYPE_NV12:
+    {
+      cv::Mat frame_raw(
+          buffer_p->framedesc.nv12.height,
+          buffer_p->framedesc.nv12.width, CV_8UC2,
+          buffer_p->framebuf,
+          buffer_p->framedesc.nv12.width);
+      cv::cvtColor(frame_raw, frame, cv::COLOR_YUV2RGB_NV12);
+    }
   case CAMERA_FRAMETYPE_YCBYCR:
     {
       cv::Mat frame_raw(
-          ci.height,
-          ci.width, CV_8UC2,
+          buffer_p->framedesc.ycbycr.height,
+          buffer_p->framedesc.ycbycr.width, CV_8UC2,
           buffer_p->framebuf,
-          ci.width * 2);
+          buffer_p->framedesc.ycbycr.width * 2);
       cv::cvtColor(frame_raw, frame, cv::COLOR_YUV2RGB_YUY2);
     }
     break;
   case CAMERA_FRAMETYPE_CBYCRY:
     {
       cv::Mat frame_raw(
-          ci.height,
-          ci.width, CV_8UC2,
+          buffer_p->framedesc.cbycry.height,
+          buffer_p->framedesc.cbycry.width, CV_8UC2,
           buffer_p->framebuf,
-          ci.width * 2);
+          buffer_p->framedesc.cbycry.width * 2);
       cv::cvtColor(frame_raw, frame, cv::COLOR_YUV2RGB_UYVY);
     }
     break;
   case CAMERA_FRAMETYPE_RGB888:
-    frame.create(ci.height, ci.width, CV_8UC3);
+    frame.create(buffer_p->framedesc.rgb888.height, buffer_p->framedesc.rgb888.width, CV_8UC3);
     memcpy(
         reinterpret_cast<char*>(frame.data),
         reinterpret_cast<char*>(buffer_p->framebuf),
-        ci.height * ci.width * 3);
+        buffer_p->framedesc.rgb888.height * buffer_p->framedesc.rgb888.width * 3);
     break;
   case CAMERA_FRAMETYPE_RGB8888:
     {
       const int from_to[8] { 0, 2, 1, 1, 2, 0, 3, 3 };
       cv::Mat frame_raw_argb(
-          ci.height,
-          ci.width, CV_8UC4,
+          buffer_p->framedesc.rgb8888.height,
+          buffer_p->framedesc.rgb8888.width, CV_8UC4,
           buffer_p->framebuf,
-          ci.width * 4);
+          buffer_p->framedesc.rgb8888.width * 4);
       cv::Mat frame_raw_bgra(frame_raw_argb.size(), frame_raw_argb.type());
       cv::mixChannels(&frame_raw_argb, 1, &frame_raw_bgra, 1, from_to, 4);
       cv::cvtColor(frame_raw_bgra, frame, cv::COLOR_RGBA2RGB);
@@ -240,10 +245,10 @@ void CameraProduceData(
   case CAMERA_FRAMETYPE_BGR8888:
     {
       cv::Mat frame_raw(
-          ci.height,
-          ci.width, CV_8UC4,
+          buffer_p->framedesc.bgr8888.height,
+          buffer_p->framedesc.bgr8888.width, CV_8UC4,
           buffer_p->framebuf,
-          ci.width * 4);
+          buffer_p->framedesc.bgr8888.width * 4);
       cv::cvtColor(frame_raw, frame, cv::COLOR_BGRA2RGB);
     }
     break;
@@ -285,6 +290,7 @@ static void CameraViewfinderCallback(
 absl::Status InitCameraSink(mp_camera_info_t &ci, const bool save_video) {
   std::vector<camera_unit_t> units;
   std::vector<camera_frametype_t> frametypes;
+  camera_frametype_t frametype = CAMERA_FRAMETYPE_UNSPECIFIED;
   int cam_ret;
   absl::Status ret = absl::OkStatus();
 
@@ -293,7 +299,6 @@ absl::Status InitCameraSink(mp_camera_info_t &ci, const bool save_video) {
   }
 
   // Set default values.
-  ci.frametype = CAMERA_FRAMETYPE_UNSPECIFIED;
   ci.handle = static_cast<camera_handle_t>(-1);
 
   units = QueryCameraUnits();
@@ -304,7 +309,7 @@ absl::Status InitCameraSink(mp_camera_info_t &ci, const bool save_video) {
   }
   ci.unit = units[0];
 
-  cam_ret = camera_open(ci.unit, CAMERA_MODE_RO | CAMERA_MODE_ROLL, &ci.handle);
+  cam_ret = camera_open(ci.unit, CAMERA_MODE_RO | CAMERA_MODE_ROLL | CAMERA_MODE_PWRITE, &ci.handle);
   if (cam_ret != CAMERA_EOK) {
     ABSL_LOG(ERROR) << "Failed to open camera. 'camera_open' returned error "
       << cam_ret << " (" << strerror(cam_ret) << ").";
@@ -319,29 +324,30 @@ absl::Status InitCameraSink(mp_camera_info_t &ci, const bool save_video) {
     ret = absl::UnknownError("Failed to find any camera frametypes.");
     goto failure;
   }
-  for (const auto &frametype : frametypes) {
-    switch(frametype) {
+  for (const auto &_frametype : frametypes) {
+    switch(_frametype) {
+    case CAMERA_FRAMETYPE_NV12:
     case CAMERA_FRAMETYPE_YCBYCR:
     case CAMERA_FRAMETYPE_CBYCRY:
     case CAMERA_FRAMETYPE_RGB888:
     case CAMERA_FRAMETYPE_RGB8888:
     case CAMERA_FRAMETYPE_BGR8888:
-      ci.frametype = frametype;
+      frametype = _frametype;
       break;
     default:
       break;
     }
-    if (ci.frametype != CAMERA_FRAMETYPE_UNSPECIFIED) {
+    if (frametype != CAMERA_FRAMETYPE_UNSPECIFIED) {
       break;
     }
   }
-  if (ci.frametype == CAMERA_FRAMETYPE_UNSPECIFIED) {
+  if (frametype == CAMERA_FRAMETYPE_UNSPECIFIED) {
     ABSL_LOG(ERROR) << "Failed to find a suitable frametype.";
     ret = absl::UnknownError("Failed to find a suitable frametype.");
     goto failure;
   }
 
-  cam_ret = camera_set_vf_property(ci.handle, CAMERA_IMGPROP_FORMAT, ci.frametype);
+  cam_ret = camera_set_vf_property(ci.handle, CAMERA_IMGPROP_FORMAT, frametype);
   if (cam_ret != CAMERA_EOK) {
     ABSL_LOG(ERROR) << "Failed to set CAMERA_IMGPROP_FORMAT property. "
       << "'camera_set_vf_property' returned error " << cam_ret << " ("
@@ -379,8 +385,7 @@ absl::Status InitCameraSink(mp_camera_info_t &ci, const bool save_video) {
       goto failure;
     }
 
-    ci.width = 640;
-    cam_ret = camera_set_vf_property(ci.handle, CAMERA_IMGPROP_WIDTH, ci.width);
+    cam_ret = camera_set_vf_property(ci.handle, CAMERA_IMGPROP_WIDTH, 640);
     if (cam_ret != CAMERA_EOK) {
       ABSL_LOG(ERROR) << "Failed to set CAMERA_IMGPROP_WIDTH property. "
         << "'camera_set_vf_property' returned error " << cam_ret << " ("
@@ -389,8 +394,7 @@ absl::Status InitCameraSink(mp_camera_info_t &ci, const bool save_video) {
       goto failure;
     }
 
-    ci.height = 480;
-    cam_ret = camera_set_vf_property(ci.handle, CAMERA_IMGPROP_HEIGHT, ci.height);
+    cam_ret = camera_set_vf_property(ci.handle, CAMERA_IMGPROP_HEIGHT, 480);
     if (cam_ret != CAMERA_EOK) {
       ABSL_LOG(ERROR) << "Failed to set CAMERA_IMGPROP_HEIGHT property. "
         << "'camera_set_vf_property' returned error " << cam_ret << " ("
@@ -399,13 +403,12 @@ absl::Status InitCameraSink(mp_camera_info_t &ci, const bool save_video) {
       goto failure;
     }
   } else {
-    cam_ret = camera_get_vf_property(ci.handle, CAMERA_IMGPROP_WIDTH, &ci.width, CAMERA_IMGPROP_HEIGHT, &ci.height, CAMERA_IMGPROP_FRAMERATE, &ci.framerate);
+    cam_ret = camera_get_vf_property(ci.handle, CAMERA_IMGPROP_WIDTH, CAMERA_IMGPROP_FRAMERATE, &ci.framerate);
     if (cam_ret != CAMERA_EOK) {
-      ABSL_LOG(ERROR) << "Failed to get CAMERA_IMGPROP_WIDTH, "
-        << "CAMERA_IMGPROP_HEIGHT, and CAMERA_IMGPROP_FRAMERATE properties. "
+      ABSL_LOG(ERROR) << "Failed to get CAMERA_IMGPROP_FRAMERATE property. "
         << "'camera_get_vf_property' returned error " << cam_ret << " ("
         << strerror(cam_ret) << ").";
-      ret = absl::ErrnoToStatus(cam_ret, "Failed to get camera properties.");
+      ret = absl::ErrnoToStatus(cam_ret, "Failed to get camera property.");
       goto failure;
     }
   }
