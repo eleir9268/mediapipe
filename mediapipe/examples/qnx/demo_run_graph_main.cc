@@ -169,7 +169,6 @@ static void CameraStatusCallback(camera_handle_t handle, camera_devstatus_t stat
       break;
     case CAMERA_STATUS_VIEWFINDER_ACTIVE:
       ABSL_LOG(INFO) << "The camera viewfinder is active.";
-      (void) printf("STATUS CALLBACK: The viewfinder is active\n");
       break;
     case CAMERA_STATUS_VIDEO_RESUME:
       ABSL_LOG(INFO) << "Camera video encoding has started.";
@@ -379,7 +378,7 @@ absl::Status InitCameraSink(mp_camera_info_t &ci, const bool save_video) {
       goto failure;
     }
   } else {
-    cam_ret = camera_get_vf_property(ci.handle, CAMERA_IMGPROP_WIDTH, CAMERA_IMGPROP_FRAMERATE, &ci.framerate);
+    cam_ret = camera_get_vf_property(ci.handle, CAMERA_IMGPROP_FRAMERATE, &ci.framerate);
     if (cam_ret != CAMERA_EOK) {
       ABSL_LOG(ERROR) << "Failed to get CAMERA_IMGPROP_FRAMERATE property. "
         << "'camera_get_vf_property' returned error " << cam_ret << " ("
@@ -450,25 +449,8 @@ absl::Status InitScreenWindow(mp_screen_info_t &si) {
   // Force the window to fullscreen by setting its size to the size of the
   // display.
   screen_display_p = (screen_display_t *) malloc(sizeof(screen_display_t));
-  if (screen_display_p == NULL) {
+  if (screen_display_p == nullptr) {
     ret = absl::ErrnoToStatus(errno, "Failed to allocate screen display.");
-    goto failure;
-  }
-
-  if (screen_get_window_property_pv(si.window, SCREEN_PROPERTY_DISPLAY, (void **) &screen_display_p) < 0) {
-    ret = absl::ErrnoToStatus(errno, "Failed to get screen display.");
-    goto failure;
-  }
-
-  if (screen_get_display_property_iv(*screen_display_p, SCREEN_PROPERTY_SIZE, si.size) < 0) {
-    ret = absl::ErrnoToStatus(errno, "Failed to get screen display size.");
-    goto failure;
-  }
-
-  ABSL_LOG(INFO) << "Defaulting to fullscreen window size of: ("
-    << si.size[0] << ", " << si.size[1] << ")";
-  if (screen_set_window_property_iv(si.window, SCREEN_PROPERTY_SOURCE_SIZE, si.size) < 0) {
-    ret = absl::ErrnoToStatus(errno, "Failed to set window source size.");
     goto failure;
   }
 
@@ -563,6 +545,7 @@ std::vector<EGLConfig> QueryEGLConfigs(mp_gl_info_t &gli) {
   return result;
 }
 
+#if 0
 // https://www.khronos.org/assets/uploads/books/openglr_es_20_programming_guide_sample.pdf
 static GLuint LoadGLShader(GLenum type, const char *src) {
   GLuint shader;
@@ -595,6 +578,7 @@ static GLuint LoadGLShader(GLenum type, const char *src) {
   }
   return shader;
 }
+#endif
 
 absl::Status InitGLPipeline(
   mp_gl_info &gli,
