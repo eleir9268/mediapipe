@@ -309,7 +309,7 @@ absl::Status InitCameraSink(mp_camera_info_t &ci, const bool save_video) {
   }
   ci.unit = units[0];
 
-  cam_ret = camera_open(ci.unit, CAMERA_MODE_RO | CAMERA_MODE_ROLL, &ci.handle);
+  cam_ret = camera_open(ci.unit, CAMERA_MODE_RO | CAMERA_MODE_ROLL | CAMERA_MODE_PWRITE, &ci.handle);
   if (cam_ret != CAMERA_EOK) {
     ABSL_LOG(ERROR) << "Failed to open camera. 'camera_open' returned error "
       << cam_ret << " (" << strerror(cam_ret) << ").";
