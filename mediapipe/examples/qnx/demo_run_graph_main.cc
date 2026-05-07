@@ -309,7 +309,7 @@ absl::Status InitCameraSink(mp_camera_info_t &ci, const bool save_video) {
   }
   ci.unit = units[0];
 
-  cam_ret = camera_open(ci.unit, CAMERA_MODE_RO | CAMERA_MODE_ROLL | CAMERA_MODE_PWRITE, &ci.handle);
+  cam_ret = camera_open(ci.unit, CAMERA_MODE_RO | CAMERA_MODE_ROLL, &ci.handle);
   if (cam_ret != CAMERA_EOK) {
     ABSL_LOG(ERROR) << "Failed to open camera. 'camera_open' returned error "
       << cam_ret << " (" << strerror(cam_ret) << ").";
@@ -317,43 +317,27 @@ absl::Status InitCameraSink(mp_camera_info_t &ci, const bool save_video) {
     goto failure;
   }
 
-  // Choose an appropriate frametype.
-  frametypes = QueryCameraFrametypes(ci);
-  if (frametypes.empty()) {
-    ABSL_LOG(ERROR) << "Failed to find any camera frametypes.";
-    ret = absl::UnknownError("Failed to find any camera frametypes.");
-    goto failure;
-  }
-  for (const auto &_frametype : frametypes) {
-    switch(_frametype) {
-    case CAMERA_FRAMETYPE_NV12:
-    case CAMERA_FRAMETYPE_YCBYCR:
-    case CAMERA_FRAMETYPE_CBYCRY:
-    case CAMERA_FRAMETYPE_RGB888:
-    case CAMERA_FRAMETYPE_RGB8888:
-    case CAMERA_FRAMETYPE_BGR8888:
-      frametype = _frametype;
-      break;
-    default:
-      break;
-    }
-    if (frametype != CAMERA_FRAMETYPE_UNSPECIFIED) {
-      break;
-    }
-  }
-  if (frametype == CAMERA_FRAMETYPE_UNSPECIFIED) {
-    ABSL_LOG(ERROR) << "Failed to find a suitable frametype.";
-    ret = absl::UnknownError("Failed to find a suitable frametype.");
-    goto failure;
-  }
-
-  cam_ret = camera_set_vf_property(ci.handle, CAMERA_IMGPROP_FORMAT, frametype);
+  cam_ret = camera_get_vf_property(ci.handle, CAMERA_IMGPROP_FORMAT, &frametype);
   if (cam_ret != CAMERA_EOK) {
     ABSL_LOG(ERROR) << "Failed to set CAMERA_IMGPROP_FORMAT property. "
       << "'camera_set_vf_property' returned error " << cam_ret << " ("
       << strerror(cam_ret) << ").";
     ret = absl::ErrnoToStatus(cam_ret, "Failed to set camera property.");
     goto failure;
+  }
+  switch(frametype) {
+  case CAMERA_FRAMETYPE_NV12:
+  case CAMERA_FRAMETYPE_YCBYCR:
+  case CAMERA_FRAMETYPE_CBYCRY:
+  case CAMERA_FRAMETYPE_RGB888:
+  case CAMERA_FRAMETYPE_RGB8888:
+  case CAMERA_FRAMETYPE_BGR8888:
+    break;
+  default:
+    ABSL_LOG(ERROR) << "The configured frametype is not supported.";
+    ret = absl::UnknownError("The configured frametype is not supported.");
+    goto failure;
+    break;
   }
 
   // Don't create a window automatically.
@@ -363,14 +347,6 @@ absl::Status InitCameraSink(mp_camera_info_t &ci, const bool save_video) {
       << "'camera_set_vf_property' returned error " << cam_ret << " ("
       << strerror(cam_ret) << ").";
     ret = absl::ErrnoToStatus(cam_ret, "Failed to set camera property.");
-    goto failure;
-  }
-
-  cam_ret = camera_start_viewfinder(ci.handle, CameraViewfinderCallback, CameraStatusCallback, &ci);
-  if (cam_ret != CAMERA_EOK) {
-    ABSL_LOG(ERROR) << "Failed to start viewfinder. 'camera_start_viewfinder' "
-      << "returned error " << cam_ret << " (" << strerror(cam_ret) << ").";
-    ret = absl::ErrnoToStatus(cam_ret, "Failed to start viewfinder.");
     goto failure;
   }
 
@@ -411,6 +387,14 @@ absl::Status InitCameraSink(mp_camera_info_t &ci, const bool save_video) {
       ret = absl::ErrnoToStatus(cam_ret, "Failed to get camera property.");
       goto failure;
     }
+  }
+
+  cam_ret = camera_start_viewfinder(ci.handle, CameraViewfinderCallback, CameraStatusCallback, &ci);
+  if (cam_ret != CAMERA_EOK) {
+    ABSL_LOG(ERROR) << "Failed to start viewfinder. 'camera_start_viewfinder' "
+      << "returned error " << cam_ret << " (" << strerror(cam_ret) << ").";
+    ret = absl::ErrnoToStatus(cam_ret, "Failed to start viewfinder.");
+    goto failure;
   }
 
   ci.initialized = true;
