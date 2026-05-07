@@ -111,6 +111,7 @@ build --copt="-DEIGEN_DONT_VECTORIZE=1"
 build --copt="-DFARMHASH_LITTLE_ENDIAN=1"
 build --copt="-Wno-c++11-narrowing"
 build --copt="-Wno-invalid-specialization"
+build --linkopt="-lz"
 build --subcommands
 build --verbose_failures
 
