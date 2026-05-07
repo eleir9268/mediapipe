@@ -446,11 +446,8 @@ absl::Status InitScreenWindow(mp_screen_info_t &si) {
     goto failure;
   }
 
-  // Force the window to fullscreen by setting its size to the size of the
-  // display.
-  screen_display_p = (screen_display_t *) malloc(sizeof(screen_display_t));
-  if (screen_display_p == nullptr) {
-    ret = absl::ErrnoToStatus(errno, "Failed to allocate screen display.");
+  if (screen_get_window_property_iv(si.window, SCREEN_PROPERTY_SIZE, si.size) < 0) {
+    ret = absl::ErrnoToStatus(errno, "Failed to get window size.");
     goto failure;
   }
 
@@ -462,15 +459,9 @@ absl::Status InitScreenWindow(mp_screen_info_t &si) {
 
   si.initialized = true;
 
-  if (screen_display_p != nullptr) {
-    free(screen_display_p);
-  }
   return ret;
 
 failure:
-  if (screen_display_p != nullptr) {
-    free(screen_display_p);
-  }
   if (si.window != (screen_window_t) -1) {
     screen_destroy_window(si.window);
     si.window = (screen_window_t) -1;
