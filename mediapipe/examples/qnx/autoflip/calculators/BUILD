@@ -28,7 +28,7 @@ cc_library(
     srcs = ["border_detection_calculator.cc"],
     deps = [
         ":border_detection_calculator_cc_proto",
-        "//mediapipe/examples/desktop/autoflip:autoflip_messages_cc_proto",
+        "//mediapipe/examples/qnx/autoflip:autoflip_messages_cc_proto",
         "//mediapipe/framework:calculator_framework",
         "//mediapipe/framework/formats:image_frame",
         "//mediapipe/framework/formats:image_frame_opencv",
@@ -54,7 +54,7 @@ cc_library(
     name = "content_zooming_calculator_state",
     hdrs = ["content_zooming_calculator_state.h"],
     deps = [
-        "//mediapipe/examples/desktop/autoflip/quality:kinematic_path_solver",
+        "//mediapipe/examples/qnx/autoflip/quality:kinematic_path_solver",
         "//mediapipe/framework:timestamp",
         "//mediapipe/framework/formats:rect_cc_proto",
     ],
@@ -66,7 +66,7 @@ cc_library(
     deps = [
         ":content_zooming_calculator_cc_proto",
         ":content_zooming_calculator_state",
-        "//mediapipe/examples/desktop/autoflip:autoflip_messages_cc_proto",
+        "//mediapipe/examples/qnx/autoflip:autoflip_messages_cc_proto",
         "//mediapipe/framework:calculator_framework",
         "//mediapipe/framework:packet",
         "//mediapipe/framework/formats:detection_cc_proto",
@@ -86,7 +86,7 @@ mediapipe_proto_library(
         "//mediapipe/examples:__subpackages__",
     ],
     deps = [
-        "//mediapipe/examples/desktop/autoflip/quality:kinematic_path_solver_proto",
+        "//mediapipe/examples/qnx/autoflip/quality:kinematic_path_solver_proto",
         "//mediapipe/framework:calculator_options_proto",
         "//mediapipe/framework:calculator_proto",
     ],
@@ -101,7 +101,7 @@ cc_test(
     deps = [
         ":border_detection_calculator",
         ":border_detection_calculator_cc_proto",
-        "//mediapipe/examples/desktop/autoflip:autoflip_messages_cc_proto",
+        "//mediapipe/examples/qnx/autoflip:autoflip_messages_cc_proto",
         "//mediapipe/framework:calculator_framework",
         "//mediapipe/framework:calculator_runner",
         "//mediapipe/framework/formats:image_frame",
@@ -126,8 +126,8 @@ cc_test(
         ":content_zooming_calculator",
         ":content_zooming_calculator_cc_proto",
         ":content_zooming_calculator_state",
-        "//mediapipe/examples/desktop/autoflip:autoflip_messages_cc_proto",
-        "//mediapipe/examples/desktop/autoflip/quality:kinematic_path_solver",
+        "//mediapipe/examples/qnx/autoflip:autoflip_messages_cc_proto",
+        "//mediapipe/examples/qnx/autoflip/quality:kinematic_path_solver",
         "//mediapipe/framework:calculator_framework",
         "//mediapipe/framework:calculator_runner",
         "//mediapipe/framework/formats:detection_cc_proto",
@@ -190,7 +190,7 @@ mediapipe_proto_library(
     srcs = ["scene_cropping_calculator.proto"],
     visibility = ["//visibility:public"],
     deps = [
-        "//mediapipe/examples/desktop/autoflip/quality:cropping_proto",
+        "//mediapipe/examples/qnx/autoflip/quality:cropping_proto",
         "//mediapipe/framework:calculator_options_proto",
         "//mediapipe/framework:calculator_proto",
     ],
@@ -202,17 +202,17 @@ cc_library(
     hdrs = ["scene_cropping_calculator.h"],
     deps = [
         ":scene_cropping_calculator_cc_proto",
-        "//mediapipe/examples/desktop/autoflip:autoflip_messages_cc_proto",
-        "//mediapipe/examples/desktop/autoflip/quality:cropping_cc_proto",
-        "//mediapipe/examples/desktop/autoflip/quality:focus_point_cc_proto",
-        "//mediapipe/examples/desktop/autoflip/quality:frame_crop_region_computer",
-        "//mediapipe/examples/desktop/autoflip/quality:padding_effect_generator",
-        "//mediapipe/examples/desktop/autoflip/quality:piecewise_linear_function",
-        "//mediapipe/examples/desktop/autoflip/quality:polynomial_regression_path_solver",
-        "//mediapipe/examples/desktop/autoflip/quality:scene_camera_motion_analyzer",
-        "//mediapipe/examples/desktop/autoflip/quality:scene_cropper",
-        "//mediapipe/examples/desktop/autoflip/quality:scene_cropping_viz",
-        "//mediapipe/examples/desktop/autoflip/quality:utils",
+        "//mediapipe/examples/qnx/autoflip:autoflip_messages_cc_proto",
+        "//mediapipe/examples/qnx/autoflip/quality:cropping_cc_proto",
+        "//mediapipe/examples/qnx/autoflip/quality:focus_point_cc_proto",
+        "//mediapipe/examples/qnx/autoflip/quality:frame_crop_region_computer",
+        "//mediapipe/examples/qnx/autoflip/quality:padding_effect_generator",
+        "//mediapipe/examples/qnx/autoflip/quality:piecewise_linear_function",
+        "//mediapipe/examples/qnx/autoflip/quality:polynomial_regression_path_solver",
+        "//mediapipe/examples/qnx/autoflip/quality:scene_camera_motion_analyzer",
+        "//mediapipe/examples/qnx/autoflip/quality:scene_cropper",
+        "//mediapipe/examples/qnx/autoflip/quality:scene_cropping_viz",
+        "//mediapipe/examples/qnx/autoflip/quality:utils",
         "//mediapipe/framework:calculator_framework",
         "//mediapipe/framework:timestamp",
         "//mediapipe/framework/formats:image_frame",
@@ -236,7 +236,7 @@ cc_test(
     tags = ["noasan"],  #  TODO b/352507058 - ASAN run takes 25 minutes. Disabled for now.
     deps = [
         ":scene_cropping_calculator",
-        "//mediapipe/examples/desktop/autoflip:autoflip_messages_cc_proto",
+        "//mediapipe/examples/qnx/autoflip:autoflip_messages_cc_proto",
         "//mediapipe/framework:calculator_framework",
         "//mediapipe/framework:calculator_runner",
         "//mediapipe/framework/formats:image_frame",
@@ -254,7 +254,7 @@ cc_library(
     srcs = ["signal_fusing_calculator.cc"],
     deps = [
         ":signal_fusing_calculator_cc_proto",
-        "//mediapipe/examples/desktop/autoflip:autoflip_messages_cc_proto",
+        "//mediapipe/examples/qnx/autoflip:autoflip_messages_cc_proto",
         "//mediapipe/framework:calculator_framework",
         "//mediapipe/framework/port:ret_check",
         "//mediapipe/framework/port:status",
@@ -268,7 +268,7 @@ mediapipe_proto_library(
     srcs = ["signal_fusing_calculator.proto"],
     visibility = ["//mediapipe/examples:__subpackages__"],
     deps = [
-        "//mediapipe/examples/desktop/autoflip:autoflip_messages_proto",
+        "//mediapipe/examples/qnx/autoflip:autoflip_messages_proto",
         "//mediapipe/framework:calculator_options_proto",
         "//mediapipe/framework:calculator_proto",
     ],
@@ -281,7 +281,7 @@ cc_test(
     deps = [
         ":signal_fusing_calculator",
         ":signal_fusing_calculator_cc_proto",
-        "//mediapipe/examples/desktop/autoflip:autoflip_messages_cc_proto",
+        "//mediapipe/examples/qnx/autoflip:autoflip_messages_cc_proto",
         "//mediapipe/framework:calculator_framework",
         "//mediapipe/framework:calculator_runner",
         "//mediapipe/framework/formats:image_frame",
@@ -325,7 +325,7 @@ mediapipe_proto_library(
 cc_test(
     name = "shot_boundary_calculator_test",
     srcs = ["shot_boundary_calculator_test.cc"],
-    data = ["//mediapipe/examples/desktop/autoflip/calculators/testdata:test_images"],
+    data = ["//mediapipe/examples/qnx/autoflip/calculators/testdata:test_images"],
     linkstatic = 1,
     deps = [
         ":shot_boundary_calculator",
@@ -353,8 +353,8 @@ cc_library(
     srcs = ["face_to_region_calculator.cc"],
     deps = [
         ":face_to_region_calculator_cc_proto",
-        "//mediapipe/examples/desktop/autoflip:autoflip_messages_cc_proto",
-        "//mediapipe/examples/desktop/autoflip/quality:visual_scorer",
+        "//mediapipe/examples/qnx/autoflip:autoflip_messages_cc_proto",
+        "//mediapipe/examples/qnx/autoflip/quality:visual_scorer",
         "//mediapipe/framework:calculator_framework",
         "//mediapipe/framework/formats:detection_cc_proto",
         "//mediapipe/framework/formats:image_frame",
@@ -373,7 +373,7 @@ mediapipe_proto_library(
     srcs = ["face_to_region_calculator.proto"],
     visibility = ["//mediapipe/examples:__subpackages__"],
     deps = [
-        "//mediapipe/examples/desktop/autoflip/quality:visual_scorer_proto",
+        "//mediapipe/examples/qnx/autoflip/quality:visual_scorer_proto",
         "//mediapipe/framework:calculator_options_proto",
         "//mediapipe/framework:calculator_proto",
     ],
@@ -386,7 +386,7 @@ cc_test(
     deps = [
         ":face_to_region_calculator",
         ":face_to_region_calculator_cc_proto",
-        "//mediapipe/examples/desktop/autoflip:autoflip_messages_cc_proto",
+        "//mediapipe/examples/qnx/autoflip:autoflip_messages_cc_proto",
         "//mediapipe/framework:calculator_framework",
         "//mediapipe/framework:calculator_runner",
         "//mediapipe/framework/formats:detection_cc_proto",
@@ -416,7 +416,7 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         ":localization_to_region_calculator_cc_proto",
-        "//mediapipe/examples/desktop/autoflip:autoflip_messages_cc_proto",
+        "//mediapipe/examples/qnx/autoflip:autoflip_messages_cc_proto",
         "//mediapipe/framework:calculator_framework",
         "//mediapipe/framework/formats:detection_cc_proto",
         "//mediapipe/framework/formats:location_data_cc_proto",
@@ -434,7 +434,7 @@ cc_test(
     deps = [
         ":localization_to_region_calculator",
         ":localization_to_region_calculator_cc_proto",
-        "//mediapipe/examples/desktop/autoflip:autoflip_messages_cc_proto",
+        "//mediapipe/examples/qnx/autoflip:autoflip_messages_cc_proto",
         "//mediapipe/framework:calculator_framework",
         "//mediapipe/framework:calculator_runner",
         "//mediapipe/framework/formats:detection_cc_proto",

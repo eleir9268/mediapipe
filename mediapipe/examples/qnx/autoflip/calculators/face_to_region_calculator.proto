@@ -16,7 +16,7 @@ syntax = "proto2";
 
 package mediapipe.autoflip;
 
-import "mediapipe/examples/desktop/autoflip/quality/visual_scorer.proto";
+import "mediapipe/examples/qnx/autoflip/quality/visual_scorer.proto";
 import "mediapipe/framework/calculator.proto";
 
 // Next tag: 6

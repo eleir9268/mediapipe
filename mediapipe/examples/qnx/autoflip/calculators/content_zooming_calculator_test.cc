@@ -14,10 +14,10 @@
 
 #include <memory>
 
-#include "mediapipe/examples/desktop/autoflip/autoflip_messages.pb.h"
-#include "mediapipe/examples/desktop/autoflip/calculators/content_zooming_calculator.pb.h"
-#include "mediapipe/examples/desktop/autoflip/calculators/content_zooming_calculator_state.h"
-#include "mediapipe/examples/desktop/autoflip/quality/kinematic_path_solver.h"
+#include "mediapipe/examples/qnx/autoflip/autoflip_messages.pb.h"
+#include "mediapipe/examples/qnx/autoflip/calculators/content_zooming_calculator.pb.h"
+#include "mediapipe/examples/qnx/autoflip/calculators/content_zooming_calculator_state.h"
+#include "mediapipe/examples/qnx/autoflip/quality/kinematic_path_solver.h"
 #include "mediapipe/framework/calculator_framework.h"
 #include "mediapipe/framework/calculator_runner.h"
 #include "mediapipe/framework/formats/detection.pb.h"

@@ -32,7 +32,7 @@ cc_binary(
 # RUN:
 # bazel-bin/mediapipe/examples/qnx/hair_segmentation/hair_segmentation_cpu \
 #   --calculator_graph_config_file=<.../hair_segmentation_desktop_live.pbtxt> \
-#   --input_video_path=<input video path> \
+#   --camera_unit=<camera unit> \
 #   --output_video_path=<output video path>
 cc_binary(
     name = "hair_segmentation_cpu",

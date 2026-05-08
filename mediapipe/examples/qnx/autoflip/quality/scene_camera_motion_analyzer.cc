@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "mediapipe/examples/desktop/autoflip/quality/scene_camera_motion_analyzer.h"
+#include "mediapipe/examples/qnx/autoflip/quality/scene_camera_motion_analyzer.h"
 
 #include <cstdint>
 #include <limits>
@@ -20,9 +20,9 @@
 #include "absl/memory/memory.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
-#include "mediapipe/examples/desktop/autoflip/quality/math_utils.h"
-#include "mediapipe/examples/desktop/autoflip/quality/piecewise_linear_function.h"
-#include "mediapipe/examples/desktop/autoflip/quality/utils.h"
+#include "mediapipe/examples/qnx/autoflip/quality/math_utils.h"
+#include "mediapipe/examples/qnx/autoflip/quality/piecewise_linear_function.h"
+#include "mediapipe/examples/qnx/autoflip/quality/utils.h"
 #include "mediapipe/framework/port/ret_check.h"
 #include "mediapipe/framework/port/status.h"
 #include "mediapipe/framework/timestamp.h"

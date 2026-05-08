@@ -12,13 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "mediapipe/examples/desktop/autoflip/calculators/scene_cropping_calculator.h"
+#include "mediapipe/examples/qnx/autoflip/calculators/scene_cropping_calculator.h"
 
 #include <random>
 #include <utility>
 #include <vector>
 
-#include "mediapipe/examples/desktop/autoflip/autoflip_messages.pb.h"
+#include "mediapipe/examples/qnx/autoflip/autoflip_messages.pb.h"
 #include "mediapipe/framework/calculator_framework.h"
 #include "mediapipe/framework/calculator_runner.h"
 #include "mediapipe/framework/formats/image_frame_opencv.h"

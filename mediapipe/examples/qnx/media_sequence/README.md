@@ -14,13 +14,13 @@ To generate the demo dataset you must have Tensorflow installed. Then the
 media_sequence_demo binary must be built from the top directory in the mediapipe
 repo and the command to build the data set must be run from the same directory.
 ```
-bazel build -c opt mediapipe/examples/desktop/media_sequence:media_sequence_demo \
+bazel build -c opt mediapipe/examples/qnx/media_sequence:media_sequence_demo \
   --define MEDIAPIPE_DISABLE_GPU=1
 
 python -m mediapipe.examples.desktop.media_sequence.demo_dataset \
   --alsologtostderr \
   --path_to_demo_data=/tmp/demo_data/ \
-  --path_to_mediapipe_binary=bazel-bin/mediapipe/examples/desktop/\
+  --path_to_mediapipe_binary=bazel-bin/mediapipe/examples/qnx/\
 media_sequence/media_sequence_demo  \
   --path_to_graph_directory=mediapipe/graphs/media_sequence/
 ```
@@ -37,13 +37,13 @@ media_sequence_demo binary must be built from the top directory in the mediapipe
 repo and the command to build the data set must be run from the same directory.
 
 ```
-bazel build -c opt mediapipe/examples/desktop/media_sequence:media_sequence_demo \
+bazel build -c opt mediapipe/examples/qnx/media_sequence:media_sequence_demo \
   --define MEDIAPIPE_DISABLE_GPU=1
 
 python -m mediapipe.examples.desktop.media_sequence.charades_dataset \
   --alsologtostderr \
   --path_to_charades_data=/tmp/charades_data/ \
-  --path_to_mediapipe_binary=bazel-bin/mediapipe/examples/desktop/\
+  --path_to_mediapipe_binary=bazel-bin/mediapipe/examples/qnx/\
 media_sequence/media_sequence_demo  \
   --path_to_graph_directory=mediapipe/graphs/media_sequence/
 ```
@@ -64,7 +64,7 @@ CUSTOM_CSV=/tmp/custom_kinetics.csv
 VIDEO_PATH=/tmp/heic1608c.mp4
 echo -e "video,time_start,time_end,split\n${VIDEO_PATH},0,10,custom" > ${CUSTOM_CSV}
 
-bazel build -c opt mediapipe/examples/desktop/media_sequence:media_sequence_demo \
+bazel build -c opt mediapipe/examples/qnx/media_sequence:media_sequence_demo \
   --define MEDIAPIPE_DISABLE_GPU=1
 
 python -m mediapipe.examples.desktop.media_sequence.kinetics_dataset \
@@ -73,7 +73,7 @@ python -m mediapipe.examples.desktop.media_sequence.kinetics_dataset \
   --path_to_custom_csv=${CUSTOM_CSV} \
   --video_path_format_string={video} \
   --path_to_kinetics_data=/tmp/ms/kinetics/ \
-  --path_to_mediapipe_binary=bazel-bin/mediapipe/examples/desktop/\
+  --path_to_mediapipe_binary=bazel-bin/mediapipe/examples/qnx/\
 media_sequence/media_sequence_demo  \
   --path_to_graph_directory=mediapipe/graphs/media_sequence/
 ```

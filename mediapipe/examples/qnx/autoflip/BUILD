@@ -16,8 +16,6 @@ load("//mediapipe/framework/port:build_config.bzl", "mediapipe_proto_library")
 
 licenses(["notice"])
 
-#FIXME: Maybe we can't support this?
-
 package(default_visibility = [
     "//mediapipe/examples:__subpackages__",
     "//photos/editing/mobile/mediapipe/calculators:__subpackages__",

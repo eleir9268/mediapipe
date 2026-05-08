@@ -1,4 +1,5 @@
 // Copyright 2019 The MediaPipe Authors.
+// Copyright (c) 2026, BlackBerry Limited. All rights reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -32,6 +33,7 @@
 #include "mediapipe/gpu/gpu_buffer.h"
 #include "mediapipe/gpu/gpu_shared_data_internal.h"
 #include "mediapipe/util/resource_util.h"
+#include "qnx_defs.h"
 
 constexpr char kInputStream[] = "input_video";
 constexpr char kOutputStream[] = "output_video";
@@ -39,9 +41,9 @@ constexpr char kWindowName[] = "MediaPipe";
 
 ABSL_FLAG(std::string, calculator_graph_config_file, "",
           "Name of file containing text format CalculatorGraphConfig proto.");
-ABSL_FLAG(std::string, input_video_path, "",
-          "Full path of video to load. "
-          "If not provided, attempt to use a webcam.");
+ABSL_FLAG(long, camera_unit, (long)CAMERA_UNIT_INVALID,
+          "The camera unit to open."
+          "Set in a .conf file passed to sensor's -c argument at boot.");
 ABSL_FLAG(std::string, output_video_path, "",
           "Full path of where to save result (.mp4 only). "
           "If not provided, show result in a window.");
@@ -67,25 +69,32 @@ absl::Status RunMPPGraph() {
   mediapipe::GlCalculatorHelper gpu_helper;
   gpu_helper.InitializeForTest(graph.GetGpuResources().get());
 
+  const bool save_video = !absl::GetFlag(FLAGS_output_video_path).empty();
+  const long camera_unit_long = absl::GetFlag(FLAGS_camera_unit);
+
   ABSL_LOG(INFO) << "Initialize the camera or load the video.";
-  cv::VideoCapture capture;
-  const bool load_video = !absl::GetFlag(FLAGS_input_video_path).empty();
-  if (load_video) {
-    capture.open(absl::GetFlag(FLAGS_input_video_path));
-  } else {
-    capture.open(0);
+  mp_camera_info_t ci = {};
+  ret = InitCameraSink(ci, (camera_unit_t)camera_unit_long, save_video);
+  if (!ret.ok()) {
+    return ret;
   }
-  RET_CHECK(capture.isOpened());
 
   cv::VideoWriter writer;
-  const bool save_video = !absl::GetFlag(FLAGS_output_video_path).empty();
+
+  mp_screen_info_t si = {};
+  mp_gl_info_t gli = {};
   if (!save_video) {
-    cv::namedWindow(kWindowName, /*flags=WINDOW_AUTOSIZE*/ 1);
-#if (CV_MAJOR_VERSION >= 3) && (CV_MINOR_VERSION >= 2)
-    capture.set(cv::CAP_PROP_FRAME_WIDTH, 640);
-    capture.set(cv::CAP_PROP_FRAME_HEIGHT, 480);
-    capture.set(cv::CAP_PROP_FPS, 30);
-#endif
+    ABSL_LOG(INFO) << "Initialize the screen window.";
+    ret = InitScreenWindow(si);
+    if (!ret.ok()) {
+      return ret;
+    }
+
+    ABSL_LOG(INFO) << "Initialize GL context.";
+    ret = InitGLContext(gli, si);
+    if (!ret.ok()) {
+      return ret;
+    }
   }
 
   ABSL_LOG(INFO) << "Start running the calculator graph.";
@@ -96,22 +105,14 @@ absl::Status RunMPPGraph() {
   ABSL_LOG(INFO) << "Start grabbing and processing frames.";
   bool grab_frames = true;
   while (grab_frames) {
-    // Capture opencv camera or video frame.
-    cv::Mat camera_frame_raw;
-    capture >> camera_frame_raw;
-    if (camera_frame_raw.empty()) {
-      if (!load_video) {
-        ABSL_LOG(INFO) << "Ignore empty frames from camera.";
-        continue;
-      }
-      ABSL_LOG(INFO) << "Empty frame, end of video reached.";
-      break;
+    // Capture sensor framework camera or video frame.
+    // The frame is already in the expected format.
+    cv::Mat camera_frame = CameraConsumeData(ci);
+    if (camera_frame.empty()) {
+      ABSL_LOG(INFO) << "Ignore empty frames from camera.";
+      continue;
     }
-    cv::Mat camera_frame;
-    cv::cvtColor(camera_frame_raw, camera_frame, cv::COLOR_BGR2RGBA);
-    if (!load_video) {
-      cv::flip(camera_frame, camera_frame, /*flipcode=HORIZONTAL*/ 1);
-    }
+    cv::flip(camera_frame, camera_frame, /*flipcode=HORIZONTAL*/ 1);
 
     // Wrap Mat into an ImageFrame.
     auto input_frame = absl::make_unique<mediapipe::ImageFrame>(
@@ -173,19 +174,27 @@ absl::Status RunMPPGraph() {
         ABSL_LOG(INFO) << "Prepare video writer.";
         writer.open(absl::GetFlag(FLAGS_output_video_path),
                     mediapipe::fourcc('a', 'v', 'c', '1'),  // .mp4
-                    capture.get(cv::CAP_PROP_FPS), output_frame_mat.size());
+                    ci.framerate, output_frame_mat.size());
         RET_CHECK(writer.isOpened());
       }
       writer.write(output_frame_mat);
     } else {
-      cv::imshow(kWindowName, output_frame_mat);
-      // Press any key to exit.
-      const int pressed_key = cv::waitKey(5);
-      if (pressed_key >= 0 && pressed_key != 255) grab_frames = false;
+      ret = GLShowMat(gli, si.size[0], si.size[1], output_frame_mat);
+      if (!ret.ok()) {
+        return ret;
+      }
+
+      // Press any key to exit. Wait for 5 miliseconds for an event to occur.
+      if (ScreenPollKeyDown(si, 5000)) {
+        grab_frames = false;
+      }
     }
   }
 
   ABSL_LOG(INFO) << "Shutting down.";
+  TeardownGLContext(gli);
+  TeardownScreenWindow(si);
+  TeardownCameraSink(ci);
   if (writer.isOpened()) writer.release();
   MP_RETURN_IF_ERROR(graph.CloseInputStream(kInputStream));
   return graph.WaitUntilDone();

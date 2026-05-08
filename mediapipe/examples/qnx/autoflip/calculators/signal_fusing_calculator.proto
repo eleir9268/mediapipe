@@ -16,7 +16,7 @@ syntax = "proto2";
 
 package mediapipe.autoflip;
 
-import "mediapipe/examples/desktop/autoflip/autoflip_messages.proto";
+import "mediapipe/examples/qnx/autoflip/autoflip_messages.proto";
 import "mediapipe/framework/calculator.proto";
 
 // Next tag: 3

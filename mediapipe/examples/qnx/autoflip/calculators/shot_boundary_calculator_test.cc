@@ -15,7 +15,7 @@
 #include "absl/container/btree_set.h"
 #include "absl/flags/flag.h"
 #include "absl/strings/string_view.h"
-#include "mediapipe/examples/desktop/autoflip/calculators/shot_boundary_calculator.pb.h"
+#include "mediapipe/examples/qnx/autoflip/calculators/shot_boundary_calculator.pb.h"
 #include "mediapipe/framework/calculator_framework.h"
 #include "mediapipe/framework/calculator_runner.h"
 #include "mediapipe/framework/deps/file_path.h"
@@ -57,7 +57,7 @@ void AddFrames(const int number_of_frames,
                CalculatorRunner* runner) {
   cv::Mat image =
       cv::imread(file::JoinPath("./",
-                                "/mediapipe/examples/desktop/"
+                                "/mediapipe/examples/qnx/"
                                 "autoflip/calculators/testdata/dino.jpg"));
 
   for (int i = 0; i < number_of_frames; i++) {

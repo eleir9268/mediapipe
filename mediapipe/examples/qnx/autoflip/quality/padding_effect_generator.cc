@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "mediapipe/examples/desktop/autoflip/quality/padding_effect_generator.h"
+#include "mediapipe/examples/qnx/autoflip/quality/padding_effect_generator.h"
 
 #include "mediapipe/framework/formats/image_frame.h"
 #include "mediapipe/framework/formats/image_frame_opencv.h"

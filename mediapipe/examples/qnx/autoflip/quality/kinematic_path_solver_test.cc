@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "mediapipe/examples/desktop/autoflip/quality/kinematic_path_solver.h"
+#include "mediapipe/examples/qnx/autoflip/quality/kinematic_path_solver.h"
 
 #include <cstdint>
 

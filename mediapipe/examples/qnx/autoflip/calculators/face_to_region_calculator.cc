@@ -15,9 +15,9 @@
 #include <algorithm>
 #include <memory>
 
-#include "mediapipe/examples/desktop/autoflip/autoflip_messages.pb.h"
-#include "mediapipe/examples/desktop/autoflip/calculators/face_to_region_calculator.pb.h"
-#include "mediapipe/examples/desktop/autoflip/quality/visual_scorer.h"
+#include "mediapipe/examples/qnx/autoflip/autoflip_messages.pb.h"
+#include "mediapipe/examples/qnx/autoflip/calculators/face_to_region_calculator.pb.h"
+#include "mediapipe/examples/qnx/autoflip/quality/visual_scorer.h"
 #include "mediapipe/framework/calculator_framework.h"
 #include "mediapipe/framework/formats/detection.pb.h"
 #include "mediapipe/framework/formats/image_frame.h"

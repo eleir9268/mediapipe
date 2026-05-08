@@ -17,9 +17,9 @@
 #include <memory>
 
 #include "absl/status/status.h"
-#include "mediapipe/examples/desktop/autoflip/autoflip_messages.pb.h"
-#include "mediapipe/examples/desktop/autoflip/calculators/content_zooming_calculator.pb.h"
-#include "mediapipe/examples/desktop/autoflip/calculators/content_zooming_calculator_state.h"
+#include "mediapipe/examples/qnx/autoflip/autoflip_messages.pb.h"
+#include "mediapipe/examples/qnx/autoflip/calculators/content_zooming_calculator.pb.h"
+#include "mediapipe/examples/qnx/autoflip/calculators/content_zooming_calculator_state.h"
 #include "mediapipe/framework/calculator_framework.h"
 #include "mediapipe/framework/formats/detection.pb.h"
 #include "mediapipe/framework/formats/image_frame.h"

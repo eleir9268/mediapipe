@@ -18,11 +18,11 @@ package(default_visibility = ["//mediapipe/examples:__subpackages__"])
 
 # BUILD:
 # bazel build -c opt --define MEDIAPIPE_DISABLE_GPU=1 \
-#   //mediapipe/examples/desktop/holistic_tracking:holistic_tracking_cpu
+#   //mediapipe/examples/qnx/holistic_tracking:holistic_tracking_cpu
 # RUN:
-# bazel-bin/mediapipe/examples/desktop/holistic_tracking/holistic_tracking_cpu \
+# bazel-bin/mediapipe/examples/qnx/holistic_tracking/holistic_tracking_cpu \
 #   --calculator_graph_config_file=<.../holistic_tracking_cpu.pbtxt> \
-#   --input_video_path=<input video path> \
+#   --camera_unit=<camera unit> \
 #   --output_video_path=<output video path>
 cc_binary(
     name = "holistic_tracking_cpu",
@@ -34,12 +34,11 @@ cc_binary(
         "//mediapipe/modules/pose_landmark:pose_landmark_full.tflite",
     ],
     deps = [
-        "//mediapipe/examples/desktop:demo_run_graph_main",
+        "//mediapipe/examples/qnx:demo_run_graph_main",
         "//mediapipe/graphs/holistic_tracking:holistic_tracking_cpu_graph_deps",
     ],
 )
 
-# FIXME: Does this work?
 cc_binary(
     name = "holistic_tracking_gpu",
     data = [
@@ -50,7 +49,7 @@ cc_binary(
         "//mediapipe/modules/pose_landmark:pose_landmark_full.tflite",
     ],
     deps = [
-        "//mediapipe/examples/desktop:demo_run_graph_main_gpu",
+        "//mediapipe/examples/qnx:demo_run_graph_main_gpu",
         "//mediapipe/graphs/holistic_tracking:holistic_tracking_gpu_deps",
     ],
 )

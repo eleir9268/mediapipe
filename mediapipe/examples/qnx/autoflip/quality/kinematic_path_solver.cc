@@ -1,4 +1,4 @@
-#include "mediapipe/examples/desktop/autoflip/quality/kinematic_path_solver.h"
+#include "mediapipe/examples/qnx/autoflip/quality/kinematic_path_solver.h"
 
 constexpr float kMinVelocity = 0.5;
 

@@ -12,13 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "mediapipe/examples/desktop/autoflip/quality/focus_point.pb.h"
+#include "mediapipe/examples/qnx/autoflip/quality/focus_point.pb.h"
 #ifndef MEDIAPIPE_EXAMPLES_DESKTOP_AUTOFLIP_QUALITY_SCENE_CROPPING_VIZ_H_
 #define MEDIAPIPE_EXAMPLES_DESKTOP_AUTOFLIP_QUALITY_SCENE_CROPPING_VIZ_H_
 
 #include <vector>
 
-#include "mediapipe/examples/desktop/autoflip/quality/cropping.pb.h"
+#include "mediapipe/examples/qnx/autoflip/quality/cropping.pb.h"
 #include "mediapipe/framework/calculator_framework.h"
 #include "mediapipe/framework/formats/image_format.pb.h"
 #include "mediapipe/framework/formats/image_frame.h"

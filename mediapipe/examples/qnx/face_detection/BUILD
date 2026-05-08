@@ -31,9 +31,9 @@ cc_binary(
 # bazel build -c opt --define MEDIAPIPE_DISABLE_GPU=1 \
 #   //mediapipe/examples/qnx/face_detection:face_detection_cpu
 # RUN:
-# bazel-bin/mediapipe/examples/desktop/face_detection/face_detection_cpu \
+# bazel-bin/mediapipe/examples/qnx/face_detection/face_detection_cpu \
 #   --calculator_graph_config_file=<.../face_detection_desktop_live.pbtxt> \
-#   --input_video_path=<input video path> \
+#   --camera_unit=<camera unit> \
 #   --output_video_path=<output video path>
 cc_binary(
     name = "face_detection_cpu",
@@ -44,7 +44,6 @@ cc_binary(
     ],
 )
 
-# TODO: Do we support this?
 cc_binary(
     name = "face_detection_gpu",
     data = ["//mediapipe/modules/face_detection:face_detection_short_range.tflite"],

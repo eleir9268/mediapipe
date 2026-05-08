@@ -16,7 +16,7 @@ syntax = "proto2";
 
 package mediapipe.autoflip;
 
-import "mediapipe/examples/desktop/autoflip/quality/cropping.proto";
+import "mediapipe/examples/qnx/autoflip/quality/cropping.proto";
 import "mediapipe/framework/calculator.proto";
 
 // Options for the SceneCroppingCalculator.

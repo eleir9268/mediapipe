@@ -12,13 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "mediapipe/examples/desktop/autoflip/quality/frame_crop_region_computer.h"
+#include "mediapipe/examples/qnx/autoflip/quality/frame_crop_region_computer.h"
 
 #include <memory>
 
 #include "absl/memory/memory.h"
-#include "mediapipe/examples/desktop/autoflip/autoflip_messages.pb.h"
-#include "mediapipe/examples/desktop/autoflip/quality/cropping.pb.h"
+#include "mediapipe/examples/qnx/autoflip/autoflip_messages.pb.h"
+#include "mediapipe/examples/qnx/autoflip/quality/cropping.pb.h"
 #include "mediapipe/framework/port/gmock.h"
 #include "mediapipe/framework/port/gtest.h"
 #include "mediapipe/framework/port/status_matchers.h"

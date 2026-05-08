@@ -19,7 +19,7 @@
 #include <vector>
 
 #include "absl/log/absl_log.h"
-#include "mediapipe/examples/desktop/autoflip/calculators/shot_boundary_calculator.pb.h"
+#include "mediapipe/examples/qnx/autoflip/calculators/shot_boundary_calculator.pb.h"
 #include "mediapipe/framework/calculator_framework.h"
 #include "mediapipe/framework/formats/image_frame.h"
 #include "mediapipe/framework/formats/image_frame_opencv.h"

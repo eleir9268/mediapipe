@@ -32,14 +32,13 @@ cc_binary(
     ],
 )
 
-# FIXME: Does this support CPU?
 # BUILD:
 # bazel build -c opt --define MEDIAPIPE_DISABLE_GPU=1 \
 #   //mediapipe/examples/qnx/face_mesh:face_mesh_cpu
 # RUN:
 # bazel-bin/mediapipe/examples/qnx/face_mesh/face_mesh_cpu \
 #   --calculator_graph_config_file=<.../face_mesh_desktop_live.pbtxt> \
-#   --input_video_path=<input video path> \
+#   --camera_unit=<camera unit> \
 #   --output_video_path=<output video path>
 cc_binary(
     name = "face_mesh_cpu",
@@ -50,7 +49,6 @@ cc_binary(
     ],
 )
 
-# FIXME: Does this work?
 cc_binary(
     name = "face_mesh_gpu",
     data = ["//mediapipe/modules/face_landmark:face_landmark_with_attention.tflite"],

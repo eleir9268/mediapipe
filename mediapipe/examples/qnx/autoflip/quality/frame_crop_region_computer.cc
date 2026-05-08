@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "mediapipe/examples/desktop/autoflip/quality/frame_crop_region_computer.h"
+#include "mediapipe/examples/qnx/autoflip/quality/frame_crop_region_computer.h"
 
 #include <cmath>
 
 #include "absl/log/absl_log.h"
-#include "mediapipe/examples/desktop/autoflip/quality/utils.h"
+#include "mediapipe/examples/qnx/autoflip/quality/utils.h"
 #include "mediapipe/framework/port/ret_check.h"
 
 namespace mediapipe {

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "mediapipe/examples/desktop/autoflip/quality/piecewise_linear_function.h"
+#include "mediapipe/examples/qnx/autoflip/quality/piecewise_linear_function.h"
 
 #include <stddef.h>
 

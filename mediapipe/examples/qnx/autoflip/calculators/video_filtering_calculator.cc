@@ -16,7 +16,7 @@
 
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
-#include "mediapipe/examples/desktop/autoflip/calculators/video_filtering_calculator.pb.h"
+#include "mediapipe/examples/qnx/autoflip/calculators/video_filtering_calculator.pb.h"
 #include "mediapipe/framework/calculator_framework.h"
 #include "mediapipe/framework/formats/image_frame.h"
 #include "mediapipe/framework/formats/image_frame_opencv.h"

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "mediapipe/examples/desktop/autoflip/quality/scene_camera_motion_analyzer.h"
+#include "mediapipe/examples/qnx/autoflip/quality/scene_camera_motion_analyzer.h"
 
 #include <algorithm>
 #include <numeric>
@@ -22,9 +22,9 @@
 #include "absl/flags/flag.h"
 #include "absl/log/absl_check.h"
 #include "absl/strings/str_split.h"
-#include "mediapipe/examples/desktop/autoflip/autoflip_messages.pb.h"
-#include "mediapipe/examples/desktop/autoflip/quality/focus_point.pb.h"
-#include "mediapipe/examples/desktop/autoflip/quality/piecewise_linear_function.h"
+#include "mediapipe/examples/qnx/autoflip/autoflip_messages.pb.h"
+#include "mediapipe/examples/qnx/autoflip/quality/focus_point.pb.h"
+#include "mediapipe/examples/qnx/autoflip/quality/piecewise_linear_function.h"
 #include "mediapipe/framework/deps/file_path.h"
 #include "mediapipe/framework/port/file_helpers.h"
 #include "mediapipe/framework/port/gmock.h"
@@ -52,7 +52,7 @@ const int kTargetWidth = 50;
 const int kTargetHeight = 50;
 
 constexpr char kCameraTrackingSceneFrameResultsFile[] =
-    "mediapipe/examples/desktop/autoflip/quality/testdata/"
+    "mediapipe/examples/qnx/autoflip/quality/testdata/"
     "camera_motion_tracking_scene_frame_results.csv";
 
 // Makes a rectangle given the corner (x, y) and the size (width, height).

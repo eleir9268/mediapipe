@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "mediapipe/examples/desktop/autoflip/quality/padding_effect_generator.h"
+#include "mediapipe/examples/qnx/autoflip/quality/padding_effect_generator.h"
 
 #include "absl/flags/flag.h"
 #include "absl/strings/str_cat.h"
@@ -38,10 +38,10 @@ namespace {
 
 // An 320x180 RGB test image.
 constexpr char kTestImage[] =
-    "mediapipe/examples/desktop/autoflip/quality/testdata/"
+    "mediapipe/examples/qnx/autoflip/quality/testdata/"
     "google.jpg";
 constexpr char kResultImagePrefix[] =
-    "mediapipe/examples/desktop/autoflip/quality/testdata/"
+    "mediapipe/examples/qnx/autoflip/quality/testdata/"
     "result_";
 
 const cv::Scalar kRed = cv::Scalar(255, 0, 0);

@@ -18,9 +18,9 @@
 #include <memory>
 #include <vector>
 
-#include "mediapipe/examples/desktop/autoflip/quality/cropping.pb.h"
-#include "mediapipe/examples/desktop/autoflip/quality/focus_point.pb.h"
-#include "mediapipe/examples/desktop/autoflip/quality/kinematic_path_solver.h"
+#include "mediapipe/examples/qnx/autoflip/quality/cropping.pb.h"
+#include "mediapipe/examples/qnx/autoflip/quality/focus_point.pb.h"
+#include "mediapipe/examples/qnx/autoflip/quality/kinematic_path_solver.h"
 #include "mediapipe/framework/port/opencv_core_inc.h"
 #include "mediapipe/framework/port/ret_check.h"
 #include "mediapipe/framework/port/status.h"

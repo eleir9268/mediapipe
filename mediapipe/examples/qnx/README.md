@@ -1,4 +1,4 @@
-# MediaPipe Desktop Examples
+# MediaPipe QNX Examples
 
 This directory contains MediaPipe example applications for desktop. See [Solutions](https://solutions.mediapipe.dev)for details.
 

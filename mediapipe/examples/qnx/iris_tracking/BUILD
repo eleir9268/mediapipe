@@ -65,7 +65,7 @@ cc_binary(
 # RUN:
 # bazel-bin/mediapipe/examples/qnx/iris_tracking/iris_tracking_cpu \
 #   --calculator_graph_config_file=<.../iris_tracking_cpu.pbtxt> \
-#   --input_video_path=<input video path> \
+#   --camera_unit=<camera unit> \
 #   --output_video_path=<output video path>
 cc_binary(
     name = "iris_tracking_cpu",
@@ -76,7 +76,6 @@ cc_binary(
     ],
 )
 
-# FIXME: Does this work?
 cc_binary(
     name = "iris_tracking_gpu",
     data = ["//mediapipe/modules/iris_landmark:iris_landmark.tflite"],

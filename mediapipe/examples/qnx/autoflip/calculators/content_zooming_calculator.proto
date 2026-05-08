@@ -16,7 +16,7 @@ syntax = "proto2";
 
 package mediapipe.autoflip;
 
-import "mediapipe/examples/desktop/autoflip/quality/kinematic_path_solver.proto";
+import "mediapipe/examples/qnx/autoflip/quality/kinematic_path_solver.proto";
 import "mediapipe/framework/calculator.proto";
 
 // NextTag: 22

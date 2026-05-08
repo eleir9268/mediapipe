@@ -18,7 +18,7 @@
 #include <cstdint>
 #include <deque>
 
-#include "mediapipe/examples/desktop/autoflip/quality/kinematic_path_solver.pb.h"
+#include "mediapipe/examples/qnx/autoflip/quality/kinematic_path_solver.pb.h"
 #include "mediapipe/framework/port/ret_check.h"
 #include "mediapipe/framework/port/status.h"
 

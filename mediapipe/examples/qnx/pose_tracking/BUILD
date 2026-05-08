@@ -22,7 +22,7 @@ package(default_visibility = ["//mediapipe/examples:__subpackages__"])
 # RUN:
 # bazel-bin/mediapipe/examples/qnx/pose_tracking/pose_tracking_cpu \
 #   --calculator_graph_config_file=<.../pose_tracking_cpu.pbtxt> \
-#   --input_video_path=<input video path> \
+#   --camera_unit=<camera unit> \
 #   --output_video_path=<output video path>
 cc_binary(
     name = "pose_tracking_cpu",

@@ -4,7 +4,7 @@
 #include <cstdint>
 #include <optional>
 
-#include "mediapipe/examples/desktop/autoflip/quality/kinematic_path_solver.h"
+#include "mediapipe/examples/qnx/autoflip/quality/kinematic_path_solver.h"
 #include "mediapipe/framework/formats/rect.pb.h"
 #include "mediapipe/framework/timestamp.h"
 
