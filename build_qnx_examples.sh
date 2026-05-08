@@ -121,15 +121,6 @@ EOF
 # DO NOT EDIT: automatically generated WORKSPACE file for toolchain_aliases rule
 workspace(name = "python")
 EOF
-
-    ln -s /usr/bin $python_toolchain/bin
-    mkdir $python_toolchain/include
-    ln -s /usr/include/python3.14 $python_toolchain/include/python3.14
-    mkdir $python_toolchain/lib
-    ln -s /usr/lib/python3.14 $python_toolchain/lib/python3.14
-    ln -s /usr/lib/libpython3.so $python_toolchain/lib/libpython3.so
-    ln -s /usr/lib/libpython3.14.so $python_toolchain/lib/libpython3.14.so
-    ln -s $python_toolchain/bin/python3 $python_toolchain/python
 fi
 
 if [[ ! -d "$python_qnx_toolchain" ]]; then
@@ -243,6 +234,15 @@ EOF
 # DO NOT EDIT: automatically generated WORKSPACE file for python_repository rule
 workspace(name = "python_qnx")
 EOF
+
+    ln -s /usr/bin $python_qnx_toolchain/bin
+    mkdir $python_qnx_toolchain/include
+    ln -s /usr/include/python3.14 $python_qnx_toolchain/include/python3.14
+    mkdir $python_qnx_toolchain/lib
+    ln -s /usr/lib/python3.14 $python_qnx_toolchain/lib/python3.14
+    ln -s /usr/lib/libpython3.so $python_qnx_toolchain/lib/libpython3.so
+    ln -s /usr/lib/libpython3.14.so $python_qnx_toolchain/lib/libpython3.14.so
+    ln -s $python_qnx_toolchain/bin/python3 $python_qnx_toolchain/python
 fi
 
 if [[ ! -d "$cpp_qnx_toolchain" ]]; then
