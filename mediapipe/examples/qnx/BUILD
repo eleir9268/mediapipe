@@ -18,6 +18,29 @@ package(default_visibility = [
     "//visibility:public",
 ])
 
+QNX_VIDEO_LINKOPTS = [
+        "-lcamapi",
+        "-lscreen",
+        "-lGLESv2",
+        "-lEGL",
+    ]
+
+cc_library(
+    name = "qnx_defs",
+    srcs = ["qnx_defs.cc"],
+    hdrs = ["qnx_defs.h"],
+    linkopts = QNX_VIDEO_LINKOPTS,
+    deps = [
+        "//mediapipe/framework/port:opencv_highgui",
+        "//mediapipe/framework/port:opencv_imgproc",
+        "//mediapipe/framework/port:opencv_video",
+        "@com_google_absl//absl/flags:flag",
+        "@com_google_absl//absl/flags:parse",
+        "@com_google_absl//absl/log:absl_log",
+        "@com_google_absl//absl/strings",
+    ],
+)
+
 cc_library(
     name = "simple_run_graph_main",
     srcs = ["simple_run_graph_main.cc"],
@@ -39,13 +62,9 @@ cc_library(
 cc_library(
     name = "demo_run_graph_main",
     srcs = ["demo_run_graph_main.cc"],
-    linkopts = [
-        "-lcamapi",
-        "-lscreen",
-        "-lGLESv2",
-        "-lEGL",
-    ],
+    linkopts = QNX_VIDEO_LINKOPTS,
     deps = [
+        ":qnx_defs",
         "//mediapipe/framework:calculator_framework",
         "//mediapipe/framework/formats:image_frame",
         "//mediapipe/framework/formats:image_frame_opencv",
@@ -69,7 +88,9 @@ cc_library(
 cc_library(
     name = "demo_run_graph_main_gpu",
     srcs = ["demo_run_graph_main_gpu.cc"],
+    linkopts = QNX_VIDEO_LINKOPTS,
     deps = [
+        ":qnx_defs",
         "//mediapipe/framework:calculator_framework",
         "//mediapipe/framework/formats:image_frame",
         "//mediapipe/framework/formats:image_frame_opencv",
