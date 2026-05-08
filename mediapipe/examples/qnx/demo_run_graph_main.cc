@@ -84,20 +84,12 @@ const std::vector<EGLint> surface_attrib_list = {
   EGL_NONE,
 };
 
-//const std::vector<std::pair<std::string, GLuint>> vertex_attrib_list = {
-//};
-
 typedef struct mp_gl_info {
   bool initialized;
   EGLDisplay display;
   EGLConfig config;
   EGLContext context;
   EGLSurface surface;
-#if 0
-  GLuint vert_shader;
-  GLuint frag_shader;
-  GLuint program;
-#endif
   GLuint framebuffer;
   GLuint texture;
 } mp_gl_info_t;
@@ -108,9 +100,9 @@ constexpr char kWindowName[] = "MediaPipe";
 
 ABSL_FLAG(std::string, calculator_graph_config_file, "",
           "Name of file containing text format CalculatorGraphConfig proto.");
-ABSL_FLAG(std::string, input_video_path, "",
-          "Full path of video to load. "
-          "If not provided, attempt to use a webcam.");
+ABSL_FLAG(long, camera_unit, (long)CAMERA_UNIT_INVALID,
+          "The camera unit to open."
+          "Set in a .conf file passed to sensor's -c argument at boot.");
 ABSL_FLAG(std::string, output_video_path, "",
           "Full path of where to save result (.mp4 only). "
           "If not provided, show result in a window.");
@@ -286,7 +278,10 @@ static void CameraViewfinderCallback(
   CameraProduceData(*ci_p, buffer_p);
 }
 
-absl::Status InitCameraSink(mp_camera_info_t &ci, const bool save_video) {
+absl::Status InitCameraSink(
+  mp_camera_info_t &ci,
+  const camera_unit_t unit,
+  const bool save_video) {
   std::vector<camera_unit_t> units;
   std::vector<camera_frametype_t> frametypes;
   camera_frametype_t frametype = CAMERA_FRAMETYPE_UNSPECIFIED;
@@ -299,14 +294,27 @@ absl::Status InitCameraSink(mp_camera_info_t &ci, const bool save_video) {
 
   // Set default values.
   ci.handle = static_cast<camera_handle_t>(-1);
+  ci.unit = CAMERA_UNIT_INVALID;
 
-  units = QueryCameraUnits();
-  if (units.empty()) {
-    ABSL_LOG(ERROR) << "Failed to find any camera units.";
-    ret = absl::UnknownError("Failed to find any camera units.");
-    goto failure;
+  if (unit == CAMERA_UNIT_INVALID) {
+    ABSL_LOG(WARNING) << "No camera unit was specified. Falling back to first "
+      << "available camera unit.";
+  } else if ((unit <= CAMERA_UNIT_NONE) || (unit >= CAMERA_UNIT_NUM_UNITS)) {
+    ABSL_LOG(WARNING) << "The specified camera unit is invalid. Falling back to "
+      << "first available camera unit.";
+  } else {
+    ci.unit = unit;
   }
-  ci.unit = units[0];
+
+  if (ci.unit == CAMERA_UNIT_INVALID) {
+    units = QueryCameraUnits();
+    if (units.empty()) {
+      ABSL_LOG(ERROR) << "Failed to find any camera units.";
+      ret = absl::UnknownError("Failed to find any camera units.");
+      goto failure;
+    }
+    ci.unit = units[0];
+  }
 
   cam_ret = camera_open(ci.unit, CAMERA_MODE_RO | CAMERA_MODE_ROLL | CAMERA_MODE_PWRITE, &ci.handle);
   if (cam_ret != CAMERA_EOK) {
@@ -350,33 +358,17 @@ absl::Status InitCameraSink(mp_camera_info_t &ci, const bool save_video) {
   }
 
   if (!save_video) {
+    // A camera unit can just be a video, which does not allow setting framerate
+    // or changing frame dimensions. So we treat these as suggestions instead.
     ci.framerate = 30.0;
     cam_ret = camera_set_vf_property(ci.handle, CAMERA_IMGPROP_FRAMERATE, ci.framerate);
     if (cam_ret != CAMERA_EOK) {
-      ABSL_LOG(ERROR) << "Failed to set CAMERA_IMGPROP_FRAMERATE property. "
-        << "'camera_set_vf_property' returned error " << cam_ret << " ("
-        << strerror(cam_ret) << ").";
-      ret = absl::ErrnoToStatus(cam_ret, "Failed to set camera property.");
-      goto failure;
+      camera_get_vf_property(ci.handle, CAMERA_IMGPROP_FRAMERATE, &ci.framerate);
     }
 
-    cam_ret = camera_set_vf_property(ci.handle, CAMERA_IMGPROP_WIDTH, 640);
-    if (cam_ret != CAMERA_EOK) {
-      ABSL_LOG(ERROR) << "Failed to set CAMERA_IMGPROP_WIDTH property. "
-        << "'camera_set_vf_property' returned error " << cam_ret << " ("
-        << strerror(cam_ret) << ").";
-      ret = absl::ErrnoToStatus(cam_ret, "Failed to set camera property.");
-      goto failure;
-    }
+    camera_set_vf_property(ci.handle, CAMERA_IMGPROP_WIDTH, 640);
 
-    cam_ret = camera_set_vf_property(ci.handle, CAMERA_IMGPROP_HEIGHT, 480);
-    if (cam_ret != CAMERA_EOK) {
-      ABSL_LOG(ERROR) << "Failed to set CAMERA_IMGPROP_HEIGHT property. "
-        << "'camera_set_vf_property' returned error " << cam_ret << " ("
-        << strerror(cam_ret) << ").";
-      ret = absl::ErrnoToStatus(cam_ret, "Failed to set camera property.");
-      goto failure;
-    }
+    camera_set_vf_property(ci.handle, CAMERA_IMGPROP_HEIGHT, 480);
   } else {
     cam_ret = camera_get_vf_property(ci.handle, CAMERA_IMGPROP_FRAMERATE, &ci.framerate);
     if (cam_ret != CAMERA_EOK) {
@@ -486,11 +478,11 @@ void TeardownScreenWindow(mp_screen_info_t &si) {
   }
 }
 
-bool ScreenPollKeyDown(const mp_screen_info_t &si) {
+bool ScreenPollKeyDown(const mp_screen_info_t &si, const uint64_t timeout) {
   int type;
   int val;
   for (;;) {
-    if (screen_get_event(si.context, si.event, 0) < 0) {
+    if (screen_get_event(si.context, si.event, timeout) < 0) {
       return false;
     }
 
@@ -536,125 +528,10 @@ std::vector<EGLConfig> QueryEGLConfigs(mp_gl_info_t &gli) {
   return result;
 }
 
-#if 0
-// https://www.khronos.org/assets/uploads/books/openglr_es_20_programming_guide_sample.pdf
-static GLuint LoadGLShader(GLenum type, const char *src) {
-  GLuint shader;
-  GLint compiled;
-
-  shader = glCreateShader(type);
-  if(shader == 0) {
-    ABSL_LOG(ERROR) << "Failed to create shader. 'glCreateShader' failed with "
-      << "error " << glGetError();
-    return 0;
-  }
-  glShaderSource(shader, 1, &src, NULL);
-
-  glCompileShader(shader);
-  glGetShaderiv(shader, GL_COMPILE_STATUS, &compiled);
-  if(!compiled)
-  {
-    GLint infoLen = 0;
-    glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &infoLen);
-    if(infoLen > 1)
-    {
-      char* infoLog = static_cast<char*>(malloc(sizeof(char) * infoLen));
-      glGetShaderInfoLog(shader, infoLen, NULL, infoLog);
-      ABSL_LOG(ERROR) << "Failed to compile shader. Output:" << std::endl
-        << infoLog;
-      free(infoLog);
-    }
-    glDeleteShader(shader);
-    return 0;
-  }
-  return shader;
-}
-#endif
-
-absl::Status InitGLPipeline(
-  mp_gl_info &gli,
-  const std::string vert_shader_src, const std::string frag_shader_src) {
+absl::Status InitGLPipeline(mp_gl_info &gli) {
   GLint glint = 0;
   GLint infoLen = 0;
   absl::Status ret = absl::OkStatus();
-
-#if 0
-  // Create and attach shaders.
-  std::ifstream vert_shader_f(vert_shader_src);
-  std::stringstream buffer;
-  buffer << vert_shader_f.rdbuf();
-  gli.vert_shader = LoadGLShader(GL_VERTEX_SHADER, buffer.str());
-  if (!gli.vert_shader) {
-    ABSL_LOG(ERROR) << "Failed to create vertex shader.";
-    ret = absl::UnknownError("Failed to create vertex shader.");
-    goto failure;
-  }
-
-  std::ifstream frag_shader_f(frag_shader_src);
-  buffer.str(std::string());
-  buffer << frag_shader_f.rdbuf();
-  gli.frag_shader = LoadGLShader(GL_FRAGMENT_SHADER, buffer.str());
-  if (!gli.frag_shader) {
-    ABSL_LOG(ERROR) << "Failed to create fragment shader.";
-    ret = absl::UnknownError("Failed to create fragment shader.");
-    goto failure;
-  }
-
-  gli.program = glCreateProgram();
-  if (gli.program == 0) {
-    ABSL_LOG(ERROR) << "Failed to link GL program. 'glLinkProgram' failed "
-      << "with error " << glint << ".";
-    ret = absl::UnknownError("Failed to link GL program.");
-    goto failure;
-  }
-  glAttachShader(gli.program, gli.vert_shader);
-  glAttachShader(gli.program, gli.frag_shader);
-
-  // Bind any attributes to the vertex shader
-  for (const auto &attrib : vertex_attrib_list) {
-    const std::string id = attrib.first;
-    const GLuint location = attrib.second;
-    glBindAttribLocation(gli.program, id, location);
-    if ((glint = glGetError())) {
-      ABSL_LOG(ERROR) << "Failed to bind GL attribute " << id << " at location "
-        << location << ". 'glBindAttribLocation' failed with error " << glint << ".";
-      ret = absl::UnknownError("Failed to bind GL attribute.");
-      goto failure;
-    }
-  }
-
-  // Link the program
-  glLinkProgram(gli.program);
-  if ((glint = glGetError())) {
-    ABSL_LOG(ERROR) << "Failed to link GL program. 'glLinkProgram' failed "
-      << "with error " << glint << ".";
-    ret = absl::UnknownError("Failed to link GL program.");
-    goto failure;
-  }
-  glGetProgramiv(gli.program, GL_LINK_STATUS, &glint);
-  if (!glint) {
-    glGetProgramiv(gli.program, GL_INFO_LOG_LENGTH, &infoLen);
-    if(infoLen > 1)
-    {
-      char* infoLog = static_cast<char*>(malloc(sizeof(char) * infoLen));
-      glGetProgramInfoLog(gli.program, infoLen, NULL, infoLog);
-      ABSL_LOG(ERROR) << "Failed to link program. Output:" << std::endl
-        << infoLog;
-      free(infoLog);
-    }
-    ret = absl::UnknownError("Failed to link GL program.");
-    goto failure;
-  }
-
-  // Switch to using this program
-  glUseProgram(gli.program);
-  if ((glint = glGetError())) {
-    ABSL_LOG(ERROR) << "Failed to use GL program. 'glUseProgram' failed "
-      << "with error " << glint << ".";
-    ret = absl::UnknownError("Failed to use GL program.");
-    goto failure;
-  }
-#endif
 
   glActiveTexture(GL_TEXTURE0);
 
@@ -683,7 +560,6 @@ absl::Status InitGLPipeline(
     ret = absl::UnknownError("Failed to create GL framebuffer.");
     goto failure;
   }
-  // TODO: Does this go here?
   glBindFramebuffer(GL_READ_FRAMEBUFFER, gli.framebuffer);
   if ((glint = glGetError())) {
     ABSL_LOG(ERROR) << "Failed to bind GL read framebuffer. "
@@ -717,20 +593,6 @@ failure:
     glDeleteFramebuffers(1, &gli.framebuffer);
     gli.framebuffer = 0;
   }
-#if 0
-  if (gli.program != 0) {
-    glDeleteProgram(gli.program);
-    gli.program = 0;
-  }
-  if (gli.vert_shader != 0) {
-    glDeleteShader(gli.vert_shader);
-    gli.vert_shader = 0;
-  }
-  if (gli.frag_shader != 0) {
-    glDeleteShader(gli.frag_shader);
-    gli.frag_shader = 0;
-  }
-#endif
   return ret;
 }
 
@@ -773,8 +635,7 @@ absl::Status InitGLContext(mp_gl_info_t &gli, const mp_screen_info_t &si) {
 
   eglMakeCurrent(gli.display, gli.surface, gli.surface, gli.context);
 
-  // TODO: Do these paths need to be relocated?
-  ret = InitGLPipeline(gli, "demo.vert", "demo.frag");
+  ret = InitGLPipeline(gli);
   if (!ret.ok()) {
     ABSL_LOG(ERROR) << "Failed to initialize GL pipeline.";
     goto failure;
@@ -803,11 +664,6 @@ failure:
 void TeardownGLContext(mp_gl_info_t &gli) {
   if (gli.initialized) {
     glDeleteFramebuffers(1, &gli.framebuffer);
-#if 0
-    glDeleteProgram(gli.program);
-    glDeleteShader(gli.vert_shader);
-    glDeleteShader(gli.frag_shader);
-#endif
     eglDestroySurface(gli.display, gli.surface);
     eglDestroyContext(gli.display, gli.context);
     eglTerminate(gli.display);
@@ -832,36 +688,31 @@ absl::Status RunMPPGraph() {
   MP_RETURN_IF_ERROR(graph.Initialize(config));
 
   const bool save_video = !absl::GetFlag(FLAGS_output_video_path).empty();
+  const long camera_unit_long = absl::GetFlag(FLAGS_camera_unit);
 
   ABSL_LOG(INFO) << "Initialize the camera or load the video.";
   mp_camera_info_t ci = {};
-  ret = InitCameraSink(ci, save_video);
+  ret = InitCameraSink(ci, (camera_unit_t)camera_unit_long, save_video);
   if (!ret.ok()) {
     return ret;
   }
-#if 0
-  // FIXME: Add this!
-  const bool load_video = !absl::GetFlag(FLAGS_input_video_path).empty();
-  if (load_video) {
-    capture.open(absl::GetFlag(FLAGS_input_video_path));
-  } else {
-    capture.open(0);
-  }
-#endif
 
   cv::VideoWriter writer;
 
-  ABSL_LOG(INFO) << "Initialize the screen window.";
   mp_screen_info_t si = {};
-  ret = InitScreenWindow(si);
-  if (!ret.ok()) {
-    return ret;
-  }
-
   mp_gl_info_t gli = {};
-  ret = InitGLContext(gli, si);
-  if (!ret.ok()) {
-    return ret;
+  if (!save_video) {
+    ABSL_LOG(INFO) << "Initialize the screen window.";
+    ret = InitScreenWindow(si);
+    if (!ret.ok()) {
+      return ret;
+    }
+
+    ABSL_LOG(INFO) << "Initialize GL context.";
+    ret = InitGLContext(gli, si);
+    if (!ret.ok()) {
+      return ret;
+    }
   }
 
   ABSL_LOG(INFO) << "Start running the calculator graph.";
@@ -876,25 +727,10 @@ absl::Status RunMPPGraph() {
     // The frame is already in the expected format.
     cv::Mat camera_frame = CameraConsumeData(ci);
     if (camera_frame.empty()) {
-#if 0
-      if (!load_video) {
-        ABSL_LOG(INFO) << "Ignore empty frames from camera.";
-        continue;
-      }
-      ABSL_LOG(INFO) << "Empty frame, end of video reached.";
-      break;
-#else
       ABSL_LOG(INFO) << "Ignore empty frames from camera.";
       continue;
-#endif
     }
-#if 0
-    if (!load_video) {
-      cv::flip(camera_frame, camera_frame, /*flipcode=HORIZONTAL*/ 1);
-    }
-#else
     cv::flip(camera_frame, camera_frame, /*flipcode=HORIZONTAL*/ 1);
-#endif
 
     // Wrap Mat into an ImageFrame.
     auto input_frame = absl::make_unique<mediapipe::ImageFrame>(
@@ -928,13 +764,35 @@ absl::Status RunMPPGraph() {
       }
       writer.write(output_frame_mat);
     } else {
+      GLint glint = 0;
       // Store the output to the display framebuffer.
       glPixelStorei(GL_UNPACK_ALIGNMENT, (output_frame_mat.step & 3) ? 1 : 4);
+      if ((glint = glGetError())) {
+        ABSL_LOG(ERROR) << "Failed set alignment for output frame. "
+          << "'glPixelStorei' failed with error " << glint << ".";
+        return absl::UnknownError("Failed set alignment for output frame.");
+      }
       glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, output_frame_mat.cols, output_frame_mat.rows, 0, GL_RGB, GL_UNSIGNED_BYTE, output_frame_mat.data);
+      if ((glint = glGetError())) {
+        ABSL_LOG(ERROR) << "Failed to store output frame to GL texture. "
+          << "'glTexImage2D' failed with error " << glint << ".";
+        return absl::UnknownError("Failed to store output frame to GL texture.");
+      }
       glBlitFramebuffer(0, 0, output_frame_mat.cols, output_frame_mat.rows, 0, 0, si.size[0], si.size[1], GL_COLOR_BUFFER_BIT, GL_LINEAR);
-      // Press any key to exit.
-      std::this_thread::sleep_for(std::chrono::milliseconds(5));
-      if (ScreenPollKeyDown(si)) {
+      if ((glint = glGetError())) {
+        ABSL_LOG(ERROR) << "Failed to blit framebuffer. 'glBlitFramebuffer' "
+          << "failed with error " << glint << ".";
+        return absl::UnknownError("Failed to blit framebuffer.");
+      }
+
+      if (eglSwapBuffers(gli.display, gli.surface) != EGL_TRUE) {
+        ABSL_LOG(ERROR) << "Failed to swap EGL buffers. 'eglSwapBuffers' "
+          << "failed with error " << eglGetError();
+        return absl::UnknownError("Failed to swap EGL buffers.");
+      }
+
+      // Press any key to exit. Wait for 5 miliseconds for an event to occur.
+      if (ScreenPollKeyDown(si, 5000)) {
         grab_frames = false;
       }
     }
