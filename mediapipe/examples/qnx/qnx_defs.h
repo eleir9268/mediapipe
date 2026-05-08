@@ -22,6 +22,7 @@
 #include "mediapipe/framework/port/opencv_highgui_inc.h"
 #include "mediapipe/framework/port/opencv_imgproc_inc.h"
 #include "mediapipe/framework/port/opencv_video_inc.h"
+#include "mediapipe/framework/port/status.h"
 
 typedef struct mp_camera_info {
   bool initialized;
