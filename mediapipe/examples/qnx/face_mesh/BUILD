@@ -54,6 +54,6 @@ cc_binary(
     data = ["//mediapipe/modules/face_landmark:face_landmark_with_attention.tflite"],
     deps = [
         "//mediapipe/examples/qnx:demo_run_graph_main_gpu",
-        "//mediapipe/graphs/face_mesh:mobile_calculators",
+        "//mediapipe/graphs/face_mesh:desktop_live_gpu_calculators",
     ],
 )
