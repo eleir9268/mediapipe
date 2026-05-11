@@ -65,6 +65,35 @@ config_setting_and_platform(
     visibility = ["//visibility:public"],
 )
 
+# Generic QNX
+config_setting(
+    name = "qnx",
+    constraint_values = [
+        "@platforms//os:qnx",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+# QNX x86 64-bit.
+config_setting_and_platform(
+    name = "qnx_x64",
+    constraint_values = [
+        "@platforms//os:qnx",
+        "@platforms//cpu:x86_64",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+# QNX ARM64.
+config_setting_and_platform(
+    name = "qnx_arm64",
+    constraint_values = [
+        "@platforms//os:qnx",
+        "@platforms//cpu:aarch64",
+    ],
+    visibility = ["//visibility:public"],
+)
+
 # Generic MacOS.
 config_setting(
     name = "macos",
