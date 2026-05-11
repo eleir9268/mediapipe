@@ -31,6 +31,7 @@
 #include "mediapipe/framework/port/opencv_video_inc.h"
 #include "mediapipe/framework/port/parse_text_proto.h"
 #include "mediapipe/framework/port/status.h"
+#include "../qnx_defs.h"
 
 constexpr char kInputStream[] = "input_image_bytes";
 constexpr char kOutputImageStream[] = "output_image";
@@ -113,11 +114,32 @@ absl::Status ProcessImage(std::unique_ptr<mediapipe::CalculatorGraph> graph) {
     ABSL_LOG(INFO) << "Saving image to file...";
     cv::imwrite(absl::GetFlag(FLAGS_output_image_path), output_frame_mat);
   } else {
-    // FIXME: Replace with screen code...
-    // cv::namedWindow(kWindowName, /*flags=WINDOW_AUTOSIZE*/ 1);
-    // cv::imshow(kWindowName, output_frame_mat);
+    mp_screen_info_t si = {};
+    mp_gl_info_t gli = {};
+    if (!save_video) {
+      ABSL_LOG(INFO) << "Initialize the screen window.";
+      ret = InitScreenWindow(si);
+      if (!ret.ok()) {
+        return ret;
+      }
+
+      ABSL_LOG(INFO) << "Initialize GL context.";
+      ret = InitGLContext(gli, si);
+      if (!ret.ok()) {
+        return ret;
+      }
+    }
+
+    ret = GLShowMat(gli, si.size[0], si.size[1], output_frame_mat);
+    if (!ret.ok()) {
+      return ret;
+    }
+
     // Press any key to exit.
-    // cv::waitKey(0);
+    ScreenPollKeyDown(si, -1);
+
+    TeardownGLContext(gli);
+    TeardownScreenWindow(si);
   }
 
   ABSL_LOG(INFO) << "Shutting down.";

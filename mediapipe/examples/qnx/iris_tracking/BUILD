@@ -18,15 +18,16 @@ package(default_visibility = ["//mediapipe/examples:__subpackages__"])
 
 # BUILD:
 # bazel build -c opt --define MEDIAPIPE_DISABLE_GPU=1 \
-#   //mediapipe/examples/qnx/iris_tracking:iris_depth_from_image_desktop
+#   //mediapipe/examples/qnx/iris_tracking:iris_depth_from_image_qnx
 # RUN:
-# bazel-bin/mediapipe/examples/qnx/iris_tracking/iris_depth_from_image_desktop \
+# bazel-bin/mediapipe/examples/qnx/iris_tracking/iris_depth_from_image_qnx \
 #   --input_image_path=<input image path> --output_image_path=<output image path>
 cc_binary(
-    name = "iris_depth_from_image_desktop",
-    srcs = ["iris_depth_from_image_desktop.cc"],
+    name = "iris_depth_from_image_qnx",
+    srcs = ["iris_depth_from_image_qnx.cc"],
     data = ["//mediapipe/modules/iris_landmark:iris_landmark.tflite"],
     deps = [
+        "//mediapipe/examples/qnx:qnx_defs",
         "//mediapipe/framework:calculator_framework",
         "//mediapipe/framework/formats:image_frame",
         "//mediapipe/framework/formats:image_frame_opencv",
