@@ -75,6 +75,10 @@ GL_BASE_LINK_OPTS = select({
         # runtime. Weak GLESv3 symbols will still be resolved if we
         # load it early enough.
     ],
+    "//mediapipe:qnx": [
+        "-lGLESv2",
+        "-lEGL",
+    ],
     "//mediapipe:ios": [
         "-framework OpenGLES",
         "-framework CoreVideo",
