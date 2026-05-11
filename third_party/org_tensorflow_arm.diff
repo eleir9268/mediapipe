@@ -1,0 +1,87 @@
+diff --git a/tensorflow/BUILD b/tensorflow/BUILD
+index d62edbbfcf4..36ea5a1dcbd 100644
+--- a/tensorflow/BUILD
++++ b/tensorflow/BUILD
+@@ -568,6 +568,18 @@ config_setting(
+     visibility = ["//visibility:public"],
+ )
+ 
++config_setting(
++    name = "qnx_arm64",
++    values = {"cpu": "qnx_arm64"},
++    visibility = ["//visibility:public"],
++)
++
++config_setting(
++    name = "qnx_x64",
++    values = {"cpu": "qnx_x64"},
++    visibility = ["//visibility:public"],
++)
++
+ config_setting(
+     name = "haswell",
+     values = {"cpu": "haswell"},
+@@ -666,6 +678,7 @@ selects.config_setting_group(
+         ":arm64-v8a",
+         ":linux_aarch64",
+         ":linux_armhf",
++        ":qnx_arm64",
+     ],
+ )
+ 
+diff --git a/tensorflow/lite/kernels/cast.cc b/tensorflow/lite/kernels/cast.cc
+index 9b6aae8a1e0..4543abfc3a4 100644
+--- a/tensorflow/lite/kernels/cast.cc
++++ b/tensorflow/lite/kernels/cast.cc
+@@ -19,6 +19,10 @@ limitations under the License.
+ #include <cstdint>
+ #include <limits>
+ 
++#ifdef __ARM_NEON
++#include <arm_neon.h>
++#endif
++
+ #include "Eigen/Core"  // from @eigen_archive
+ #include "tensorflow/lite/core/c/common.h"
+ #include "tensorflow/lite/core/subgraph.h"
+diff --git a/tensorflow/lite/kernels/internal/BUILD b/tensorflow/lite/kernels/internal/BUILD
+index 2a1f510c131..1d40a8c39da 100644
+--- a/tensorflow/lite/kernels/internal/BUILD
++++ b/tensorflow/lite/kernels/internal/BUILD
+@@ -177,6 +177,13 @@ config_setting(
+     },
+ )
+ 
++config_setting(
++    name = "qnx_arm64",
++    values = {
++        "cpu": "qnx_arm64",
++    },
++)
++
+ config_setting(
+     name = "ios_sim_arm64",
+     values = {
+@@ -294,6 +301,7 @@ selects.config_setting_group(
+         ":ios_arm64e",
+         ":ios_sim_arm64",
+         ":darwin_arm64",
++        ":qnx_arm64",
+         ":raspberry_pi_with_neon",
+         ":visionos_arm64",
+         ":visionos_sim_arm64",
+diff --git a/tensorflow/lite/kernels/internal/optimized/optimized_ops.h b/tensorflow/lite/kernels/internal/optimized/optimized_ops.h
+index 3299f610697..183ed39297e 100644
+--- a/tensorflow/lite/kernels/internal/optimized/optimized_ops.h
++++ b/tensorflow/lite/kernels/internal/optimized/optimized_ops.h
+@@ -35,6 +35,10 @@ limitations under the License.
+ #include "tensorflow/lite/kernels/internal/reference/mul.h"
+ #include "tensorflow/lite/kernels/internal/reference/resize_nearest_neighbor.h"
+ 
++#ifdef __ARM_NEON
++#include <arm_neon.h>
++#endif
++
+ #if defined(TF_LITE_USE_CBLAS) && defined(__APPLE__)
+ #include <Accelerate/Accelerate.h>
+ #endif

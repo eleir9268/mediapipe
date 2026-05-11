@@ -333,6 +333,7 @@ http_archive(
         "@//third_party:org_tensorflow_elementwise.diff",
         "@//third_party:org_tensorflow_farmhash.diff",
         "@//third_party:org_tensorflow_pthreadpool_deps.diff",
+        "@//third_party:org_tensorflow_arm.diff",
     ],
     sha256 = _TENSORFLOW_SHA256,
     strip_prefix = "tensorflow-%s" % _TENSORFLOW_GIT_COMMIT,
