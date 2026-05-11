@@ -250,8 +250,26 @@ if [[ ! -d "$cpp_qnx_toolchain" ]]; then
   mkdir -p "$cpp_qnx_toolchain"
   cat << EOF > "$cpp_qnx_toolchain/BUILD.bazel"
 toolchain(
-    name = "qnx_cc_toolchain",
+    name = "qnx_cc_toolchain_x64",
+    exec_compatible_with = [
+        "@platforms//cpu:x86_64",
+    ],
+    target_compatible_with = [
+        "@platforms//cpu:x86_64",
+    ],
     toolchain = "@local_config_cc//:cc-compiler-qnx_x64",
+    toolchain_type = "@bazel_tools//tools/cpp:toolchain_type",
+)
+
+toolchain(
+    name = "qnx_cc_toolchain_arm64",
+    exec_compatible_with = [
+        "@platforms//cpu:aarch64",
+    ],
+    target_compatible_with = [
+        "@platforms//cpu:aarch64",
+    ],
+    toolchain = "@local_config_cc//:cc-compiler-qnx_arm64",
     toolchain_type = "@bazel_tools//tools/cpp:toolchain_type",
 )
 EOF
@@ -295,7 +313,7 @@ EOF
 fi
 
 declare -a default_bazel_flags=(build -c opt --define MEDIAPIPE_DISABLE_GPU=1)
-declare -a qnx_bazel_flags=(--action_env=PYTHON_BIN_PATH=/usr/bin/python3 --repo_env=BAZEL_CXXOPTS=-std=c++17 --override_repository=python=./python --override_repository=python_qnx=./python_qnx --extra_toolchains=@python_qnx//:qnx_py_toolchain --extra_toolchains=@python_qnx//:qnx_py_toolchain2 --extra_toolchains=@python_qnx//:qnx_py_cc_toolchain --extra_toolchains=//cpp_qnx:qnx_cc_toolchain --extra_toolchains=//buildbase_qnx:qnx_cmake_toolchain --extra_toolchains=//buildbase_qnx:qnx_ninja_toolchain)
+declare -a qnx_bazel_flags=(--action_env=PYTHON_BIN_PATH=/usr/bin/python3 --repo_env=BAZEL_CXXOPTS=-std=c++17 --override_repository=python=${python_toolchain} --override_repository=python_qnx=${python_qnx_toolchain} --extra_toolchains=@${python_qnx_toolchain}//:qnx_py_toolchain --extra_toolchains=@${python_qnx_toolchain}//:qnx_py_toolchain2 --extra_toolchains=@${python_qnx_toolchain}//:qnx_py_cc_toolchain --extra_toolchains=//${cpp_qnx_toolchain}:qnx_cc_toolchain_x64 --extra_toolchains=//${cpp_qnx_toolchain}:qnx_cc_toolchain_arm64 --extra_toolchains=//${buildbase_qnx_toolchain}:qnx_cmake_toolchain --extra_toolchains=//${buildbase_qnx_toolchain}:qnx_ninja_toolchain)
 
 while [[ -n $1 ]]; do
   case $1 in
