@@ -117,20 +117,26 @@ void CameraProduceData(
   switch(buffer_p->frametype) {
   case CAMERA_FRAMETYPE_NV12:
     {
-      cv::Mat frame_raw(
+      cv::Mat frame_raw_y(
           buffer_p->framedesc.nv12.height,
-          buffer_p->framedesc.nv12.width, CV_8UC2,
+          buffer_p->framedesc.nv12.width, CV_8UC1,
           buffer_p->framebuf,
-          buffer_p->framedesc.nv12.width);
-      cv::cvtColor(frame_raw, frame, cv::COLOR_YUV2RGB_NV12);
+          buffer_p->framedesc.nv12.stride);
+      cv::Mat frame_raw_uv(
+          (buffer_p->framedesc.nv12.height / 2),
+          (buffer_p->framedesc.nv12.width / 2), CV_8UC2,
+          buffer_p->framebuf + buffer_p->framedesc.nv12.uv_offset,
+          buffer_p->framedesc.nv12.uv_stride);
+      cv::cvtColorTwoPlane(frame_raw_y, frame_raw_uv, frame, cv::COLOR_YUV2RGB_NV12);
     }
+    break;
   case CAMERA_FRAMETYPE_YCBYCR:
     {
       cv::Mat frame_raw(
           buffer_p->framedesc.ycbycr.height,
           buffer_p->framedesc.ycbycr.width, CV_8UC2,
           buffer_p->framebuf,
-          buffer_p->framedesc.ycbycr.width * 2);
+          buffer_p->framedesc.ycbycr.stride);
       cv::cvtColor(frame_raw, frame, cv::COLOR_YUV2RGB_YUY2);
     }
     break;
@@ -140,16 +146,17 @@ void CameraProduceData(
           buffer_p->framedesc.cbycry.height,
           buffer_p->framedesc.cbycry.width, CV_8UC2,
           buffer_p->framebuf,
-          buffer_p->framedesc.cbycry.width * 2);
+          buffer_p->framedesc.cbycry.stride);
       cv::cvtColor(frame_raw, frame, cv::COLOR_YUV2RGB_UYVY);
     }
     break;
   case CAMERA_FRAMETYPE_RGB888:
     frame.create(buffer_p->framedesc.rgb888.height, buffer_p->framedesc.rgb888.width, CV_8UC3);
-    memcpy(
-        reinterpret_cast<char*>(frame.data),
-        reinterpret_cast<char*>(buffer_p->framebuf),
-        buffer_p->framedesc.rgb888.height * buffer_p->framedesc.rgb888.width * 3);
+    for (uint32_t i = 0; i < buffer_p->framedesc.rgb888.height; ++i) {
+      uint8_t *src_p = buffer_p->framebuf + (i * buffer_p->framedesc.rgb888.stride);
+      uint8_t *dst_p = reinterpret_cast<uint8_t*>(frame.data + (i * buffer_p->framedesc.rgb888.width * 3));
+      memcpy(dst_p, src_p, buffer_p->framedesc.rgb888.width * 3);
+    }
     break;
   case CAMERA_FRAMETYPE_RGB8888:
     {
@@ -158,7 +165,7 @@ void CameraProduceData(
           buffer_p->framedesc.rgb8888.height,
           buffer_p->framedesc.rgb8888.width, CV_8UC4,
           buffer_p->framebuf,
-          buffer_p->framedesc.rgb8888.width * 4);
+          buffer_p->framedesc.rgb8888.stride);
       cv::Mat frame_raw_bgra(frame_raw_argb.size(), frame_raw_argb.type());
       cv::mixChannels(&frame_raw_argb, 1, &frame_raw_bgra, 1, from_to, 4);
       cv::cvtColor(frame_raw_bgra, frame, cv::COLOR_RGBA2RGB);
@@ -170,7 +177,7 @@ void CameraProduceData(
           buffer_p->framedesc.bgr8888.height,
           buffer_p->framedesc.bgr8888.width, CV_8UC4,
           buffer_p->framebuf,
-          buffer_p->framedesc.bgr8888.width * 4);
+          buffer_p->framedesc.bgr8888.stride);
       cv::cvtColor(frame_raw, frame, cv::COLOR_BGRA2RGB);
     }
     break;
@@ -182,7 +189,8 @@ void CameraProduceData(
   {
     std::lock_guard<std::mutex> data_guard(ci.data_m);
 
-    ci.data = frame;
+    // Clone so that the data is still valid when we get a new frame.
+    ci.data = frame.clone();
     ci.data_ready = true;
   }
   ci.data_cv.notify_one();
