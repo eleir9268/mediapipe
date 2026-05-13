@@ -126,7 +126,6 @@ absl::Status RunMPPGraph() {
 
     // Convert back to opencv for display or saving.
     cv::Mat output_frame_mat = mediapipe::formats::MatView(&output_frame);
-    cv::cvtColor(output_frame_mat, output_frame_mat, cv::COLOR_RGB2BGR);
     if (save_video) {
       if (!writer.isOpened()) {
         ABSL_LOG(INFO) << "Prepare video writer.";
