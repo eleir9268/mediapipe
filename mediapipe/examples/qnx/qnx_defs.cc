@@ -151,11 +151,13 @@ void CameraProduceData(
     }
     break;
   case CAMERA_FRAMETYPE_RGB888:
-    frame.create(buffer_p->framedesc.rgb888.height, buffer_p->framedesc.rgb888.width, CV_8UC3);
-    for (uint32_t i = 0; i < buffer_p->framedesc.rgb888.height; ++i) {
-      uint8_t *src_p = buffer_p->framebuf + (i * buffer_p->framedesc.rgb888.stride);
-      uint8_t *dst_p = reinterpret_cast<uint8_t*>(frame.data + (i * buffer_p->framedesc.rgb888.width * 3));
-      memcpy(dst_p, src_p, buffer_p->framedesc.rgb888.width * 3);
+    {
+      cv::Mat frame_raw(
+          buffer_p->framedesc.rgb888.height,
+          buffer_p->framedesc.rgb888.width, CV_8UC3,
+          buffer_p->framebuf,
+          buffer_p->framedesc.rgb888.stride);
+      frame = frame_raw;
     }
     break;
   case CAMERA_FRAMETYPE_RGB8888:
@@ -185,6 +187,9 @@ void CameraProduceData(
     ABSL_LOG(ERROR) << "The camera frametype is invalid.";
     return;
   }
+  // OpenCV does not interpret the data correctly unless we flip it.
+  cv::flip(frame, frame, /*flipcode=VERTICAL*/ 0);
+
   // We don't need data to be empty before writing the buffer.
   {
     std::lock_guard<std::mutex> data_guard(ci.data_m);
