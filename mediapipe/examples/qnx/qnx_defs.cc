@@ -630,8 +630,7 @@ absl::Status GLShowMat(
   if ((glint = glGetError())) {
     ABSL_LOG(ERROR) << "Failed to bind GL texture. 'glBindTexture' "
       << "failed with error " << glint << ".";
-    ret = absl::UnknownError("Failed to bind GL texture.");
-    goto failure;
+    return absl::UnknownError("Failed to bind GL texture.");
   }
   glBindFramebuffer(GL_READ_FRAMEBUFFER, gli.framebuffer);
   if ((glint = glGetError())) {
