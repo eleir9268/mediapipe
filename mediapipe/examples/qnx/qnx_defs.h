@@ -84,5 +84,5 @@ bool ScreenPollKeyDown(const mp_screen_info_t &si, const uint64_t timeout);
 std::vector<EGLConfig> QueryEGLConfigs(mp_gl_info_t &gli);
 absl::Status InitGLPipeline(mp_gl_info &gli);
 absl::Status InitGLContext(mp_gl_info_t &gli, const mp_screen_info_t &si);
-void TeardownGLContext(mp_gl_info_t &gli);
+void TeardownGLContext(mp_gl_info_t &gli, const bool is_gpu_backend);
 absl::Status GLShowMat(mp_gl_info_t &gli, const int window_width, const int window_height, const cv::Mat &output);
