@@ -18,7 +18,7 @@
 
 static const std::vector<EGLint> config_attrib_list = {
   EGL_SURFACE_TYPE,             EGL_WINDOW_BIT,
-  EGL_RENDERABLE_TYPE,          EGL_OPENGL_ES2_BIT,
+  EGL_RENDERABLE_TYPE,          EGL_OPENGL_ES3_BIT_KHR,
   // We want a pixel-format of RGBX8888 or RGBA8888.
   EGL_RED_SIZE,                 8,
   EGL_GREEN_SIZE,               8,
@@ -29,7 +29,7 @@ static const std::vector<EGLint> config_attrib_list = {
 };
 
 static const std::vector<EGLint> context_attrib_list = {
-  EGL_CONTEXT_CLIENT_VERSION,   2,
+  EGL_CONTEXT_CLIENT_VERSION,   3,
   EGL_NONE,
 };
 
@@ -605,12 +605,16 @@ failure:
   return ret;
 }
 
-void TeardownGLContext(mp_gl_info_t &gli) {
+void TeardownGLContext(mp_gl_info_t &gli, const bool is_gpu_backend) {
   if (gli.initialized) {
+    glDeleteTextures(1, &gli.texture);
     glDeleteFramebuffers(1, &gli.framebuffer);
     eglDestroySurface(gli.display, gli.surface);
     eglDestroyContext(gli.display, gli.context);
-    eglTerminate(gli.display);
+    // MP takes ownership of the GL display with GPU enabled.
+    if (!is_gpu_backend) {
+      eglTerminate(gli.display);
+    }
     gli.initialized = false;
   }
 }
@@ -621,6 +625,26 @@ absl::Status GLShowMat(
   const int window_height,
   const cv::Mat &output) {
   GLint glint = 0;
+
+  glBindTexture(GL_TEXTURE_2D, gli.texture);
+  if ((glint = glGetError())) {
+    ABSL_LOG(ERROR) << "Failed to bind GL texture. 'glBindTexture' "
+      << "failed with error " << glint << ".";
+    ret = absl::UnknownError("Failed to bind GL texture.");
+    goto failure;
+  }
+  glBindFramebuffer(GL_READ_FRAMEBUFFER, gli.framebuffer);
+  if ((glint = glGetError())) {
+    ABSL_LOG(ERROR) << "Failed to bind GL read framebuffer. "
+      << "'glBindFramebuffer' failed with error " << glint << ".";
+    return absl::UnknownError("Failed to bind GL framebuffer.");
+  }
+  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+  if ((glint = glGetError())) {
+    ABSL_LOG(ERROR) << "Failed to bind GL write framebuffer. "
+      << "'glBindFramebuffer' failed with error " << glint << ".";
+    return absl::UnknownError("Failed to bind GL framebuffer.");
+  }
   // Store the output to the display framebuffer.
   glPixelStorei(GL_UNPACK_ALIGNMENT, (output.step & 3) ? 1 : 4);
   if ((glint = glGetError())) {

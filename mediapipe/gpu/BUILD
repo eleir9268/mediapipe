@@ -104,6 +104,7 @@ GL_BASE_LINK_OPTS_OSS = GL_BASE_LINK_OPTS + select({
         "-lEGL",
     ],
     "//mediapipe:android": [],
+    "//mediapipe:qnx": [],
     ":platform_apple_with_gpu": [],
     ":disable_gpu": [],
 })

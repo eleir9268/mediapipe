@@ -30,6 +30,7 @@
 #include <camera/camera_api.h>
 #include <screen/screen.h>
 #include <EGL/egl.h>
+#include <EGL/eglext.h>
 #include <GLES3/gl3.h>
 
 #include "absl/flags/flag.h"

@@ -191,7 +191,7 @@ absl::Status RunMPPGraph() {
   }
 
   ABSL_LOG(INFO) << "Shutting down.";
-  TeardownGLContext(gli);
+  TeardownGLContext(gli, true);
   TeardownScreenWindow(si);
   TeardownCameraSink(ci);
   if (writer.isOpened()) writer.release();
