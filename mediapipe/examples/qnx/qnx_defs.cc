@@ -645,17 +645,28 @@ absl::Status GLShowMat(
     return absl::UnknownError("Failed to bind GL framebuffer.");
   }
   // Store the output to the display framebuffer.
-  glPixelStorei(GL_UNPACK_ALIGNMENT, (output.step & 3) ? 1 : 4);
-  if ((glint = glGetError())) {
-    ABSL_LOG(ERROR) << "Failed set alignment for output frame. "
-      << "'glPixelStorei' failed with error " << glint << ".";
-    return absl::UnknownError("Failed set alignment for output frame.");
-  }
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, output.cols, output.rows, 0, GL_RGB, GL_UNSIGNED_BYTE, output.data);
-  if ((glint = glGetError())) {
-    ABSL_LOG(ERROR) << "Failed to store output frame to GL texture. "
-      << "'glTexImage2D' failed with error " << glint << ".";
-    return absl::UnknownError("Failed to store output frame to GL texture.");
+  if (output.step == cv::Mat::AUTO_STEP) {
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, output.cols, output.rows, 0, GL_RGB, GL_UNSIGNED_BYTE, output.data);
+    if ((glint = glGetError())) {
+      ABSL_LOG(ERROR) << "Failed to store output frame to GL texture. "
+        << "'glTexImage2D' failed with error " << glint << ".";
+    }
+  } else {
+    glPixelStorei(GL_UNPACK_ALIGNMENT, (output.step & 3) ? 1 : 4);
+    if ((glint = glGetError())) {
+      ABSL_LOG(ERROR) << "Failed set alignment for output frame. "
+        << "'glPixelStorei' failed with error " << glint << ".";
+    }
+    glPixelStorei(GL_UNPACK_ROW_LENGTH, output.cols);
+    if ((glint = glGetError())) {
+      ABSL_LOG(ERROR) << "Failed set columns for output frame. "
+        << "'glPixelStorei' failed with error " << glint << ".";
+    }
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, output.step, output.rows, 0, GL_RGB, GL_UNSIGNED_BYTE, output.data);
+    if ((glint = glGetError())) {
+      ABSL_LOG(ERROR) << "Failed to store output frame to GL texture. "
+        << "'glTexImage2D' failed with error " << glint << ".";
+    }
   }
   glBlitFramebuffer(0, 0, output.cols, output.rows, 0, 0, window_width, window_height, GL_COLOR_BUFFER_BIT, GL_LINEAR);
   if ((glint = glGetError())) {
