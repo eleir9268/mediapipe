@@ -108,11 +108,13 @@ absl::Status RunMPPGraph() {
   while (grab_frames) {
     // Capture sensor framework camera or video frame.
     // The frame is already in the expected format.
-    cv::Mat camera_frame = CameraConsumeData(ci);
-    if (camera_frame.empty()) {
+    cv::Mat camera_frame_raw = CameraConsumeData(ci);
+    if (camera_frame_raw.empty()) {
       ABSL_LOG(INFO) << "Ignore empty frames from camera.";
       continue;
     }
+    cv::Mat camera_frame;
+    cv::cvtColor(camera_frame_raw, camera_frame, cv::COLOR_RGB2RGBA)
     cv::flip(camera_frame, camera_frame, /*flipcode=HORIZONTAL*/ 1);
 
     // Wrap Mat into an ImageFrame.
