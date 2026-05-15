@@ -644,6 +644,12 @@ absl::Status GLShowMat(
       << "'glBindFramebuffer' failed with error " << glint << ".";
     return absl::UnknownError("Failed to bind GL framebuffer.");
   }
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  if ((glint = glGetError())) {
+    ABSL_LOG(ERROR) << "Failed to clear colour and depth buffers. "
+      << "'glClear' failed with error " << glint << ".";
+    return absl::UnknownError("Failed to clear colour and depth buffers.");
+  }
   // Store the output to the display framebuffer.
   if (output.step == cv::Mat::AUTO_STEP) {
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, output.cols, output.rows, 0, GL_RGB, GL_UNSIGNED_BYTE, output.data);
@@ -657,12 +663,12 @@ absl::Status GLShowMat(
       ABSL_LOG(ERROR) << "Failed set alignment for output frame. "
         << "'glPixelStorei' failed with error " << glint << ".";
     }
-    glPixelStorei(GL_UNPACK_ROW_LENGTH, output.cols);
+    glPixelStorei(GL_UNPACK_ROW_LENGTH, output.step / 3);
     if ((glint = glGetError())) {
       ABSL_LOG(ERROR) << "Failed set columns for output frame. "
         << "'glPixelStorei' failed with error " << glint << ".";
     }
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, output.step, output.rows, 0, GL_RGB, GL_UNSIGNED_BYTE, output.data);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, output.cols, output.rows, 0, GL_RGB, GL_UNSIGNED_BYTE, output.data);
     if ((glint = glGetError())) {
       ABSL_LOG(ERROR) << "Failed to store output frame to GL texture. "
         << "'glTexImage2D' failed with error " << glint << ".";
@@ -680,6 +686,10 @@ absl::Status GLShowMat(
       << "failed with error " << eglGetError();
     return absl::UnknownError("Failed to swap EGL buffers.");
   }
+
+  // Reset defaults.
+  glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+  glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
 
   return absl::OkStatus();
 }
