@@ -46,7 +46,6 @@ ABSL_FLAG(std::string, output_video_path, "",
 
 absl::Status RunMPPGraph() {
   std::string calculator_graph_config_contents;
-  absl::Status ret;
   MP_RETURN_IF_ERROR(mediapipe::file::GetContents(
       absl::GetFlag(FLAGS_calculator_graph_config_file),
       &calculator_graph_config_contents));
@@ -65,10 +64,7 @@ absl::Status RunMPPGraph() {
 
   ABSL_LOG(INFO) << "Initialize the camera or load the video.";
   mp_camera_info_t ci = {};
-  ret = InitCameraSink(ci, (camera_unit_t)camera_unit_long, save_video);
-  if (!ret.ok()) {
-    return ret;
-  }
+  MP_RETURN_IF_ERROR(InitCameraSink(ci, (camera_unit_t)camera_unit_long, save_video));
 
   cv::VideoWriter writer;
 
@@ -76,16 +72,10 @@ absl::Status RunMPPGraph() {
   mp_gl_info_t gli = {};
   if (!save_video) {
     ABSL_LOG(INFO) << "Initialize the screen window.";
-    ret = InitScreenWindow(si);
-    if (!ret.ok()) {
-      return ret;
-    }
+    MP_RETURN_IF_ERROR(InitScreenWindow(si));
 
     ABSL_LOG(INFO) << "Initialize GL context.";
-    ret = InitGLContext(gli, si);
-    if (!ret.ok()) {
-      return ret;
-    }
+    MP_RETURN_IF_ERROR(InitGLContext(gli, si));
   }
 
   ABSL_LOG(INFO) << "Start running the calculator graph.";
@@ -136,10 +126,7 @@ absl::Status RunMPPGraph() {
       }
       writer.write(output_frame_mat);
     } else {
-      ret = GLShowMat(gli, si.size[0], si.size[1], output_frame_mat);
-      if (!ret.ok()) {
-        return ret;
-      }
+      MP_RETURN_IF_ERROR(GLShowMat(gli, si.size[0], si.size[1], output_frame_mat));
 
       // Press any key to exit. Wait for 5 miliseconds for an event to occur.
       if (ScreenPollKeyDown(si, 5000)) {
