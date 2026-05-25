@@ -104,7 +104,7 @@ absl::Status RunMPPGraph() {
       continue;
     }
     cv::Mat camera_frame;
-    cv::cvtColor(camera_frame_raw, camera_frame, cv::COLOR_RGB2RGBA)
+    cv::cvtColor(camera_frame_raw, camera_frame, cv::COLOR_RGB2RGBA);
     cv::flip(camera_frame, camera_frame, /*flipcode=HORIZONTAL*/ 1);
 
     // Wrap Mat into an ImageFrame.
