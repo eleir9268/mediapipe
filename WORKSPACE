@@ -296,10 +296,10 @@ http_archive(
 
 http_archive(
     name = "cpuinfo",
-    sha256 = "62921f04770ce6bc5a686da1ca0a0efcf3d069f00a64c851b3b10496ccfadb21",
-    strip_prefix = "cpuinfo-115abd71902b58ffe5c54e8d183770bf1c7f6e24",
+    sha256 = "c4f2b2769e229332e88c0881eefbcc98f0a373fee253378934c404c7038a0937",
+    strip_prefix = "cpuinfo-285d518f2a0bf851da759d8ce35f63d8d5f8dad1",
     urls = [
-        "https://github.com/pytorch/cpuinfo/archive/115abd71902b58ffe5c54e8d183770bf1c7f6e24.zip",
+        "https://github.com/qnx-ports/cpuinfo/archive/285d518f2a0bf851da759d8ce35f63d8d5f8dad1.zip",
     ],
 )
 

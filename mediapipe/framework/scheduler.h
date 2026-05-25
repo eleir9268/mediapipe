@@ -31,6 +31,10 @@
 #include "mediapipe/framework/scheduler_queue.h"
 #include "mediapipe/framework/scheduler_shared.h"
 
+#ifdef STATE_RUNNING
+#undef STATE_RUNNING
+#endif
+
 namespace mediapipe {
 
 class CalculatorGraph;
