@@ -296,10 +296,10 @@ http_archive(
 
 http_archive(
     name = "cpuinfo",
-    sha256 = "c4f2b2769e229332e88c0881eefbcc98f0a373fee253378934c404c7038a0937",
-    strip_prefix = "cpuinfo-285d518f2a0bf851da759d8ce35f63d8d5f8dad1",
+    sha256 = "ca74add3ea4b9e938d44a18f25a37adddc9a1f88dd2515714812e226e83f94ff",
+    strip_prefix = "cpuinfo-568376c958a459d2d4fd36fbbbe50b43b8bd2c63",
     urls = [
-        "https://github.com/qnx-ports/cpuinfo/archive/285d518f2a0bf851da759d8ce35f63d8d5f8dad1.zip",
+        "https://github.com/qnx-ports/cpuinfo/archive/568376c958a459d2d4fd36fbbbe50b43b8bd2c63.zip",
     ],
 )
 
