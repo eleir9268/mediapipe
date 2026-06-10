@@ -187,8 +187,6 @@ void CameraProduceData(
     ABSL_LOG(ERROR) << "The camera frametype is invalid.";
     return;
   }
-  // OpenCV does not interpret the data correctly unless we flip it.
-  cv::flip(frame, frame, /*flipcode=VERTICAL*/ 0);
 
   // We don't need data to be empty before writing the buffer.
   {
@@ -626,6 +624,11 @@ absl::Status GLShowMat(
   const cv::Mat &output) {
   GLint glint = 0;
 
+  // GL uses the opposite vertical coordinate system. We're flipping with cpu
+  // here, but it could also be implemented in gpu shader code.
+  cv::Mat tmp_frame;
+  cv::flip(output, tmp_frame, /*flipcode=VERTICAL*/ 0);
+
   glBindTexture(GL_TEXTURE_2D, gli.texture);
   if ((glint = glGetError())) {
     ABSL_LOG(ERROR) << "Failed to bind GL texture. 'glBindTexture' "
@@ -651,30 +654,30 @@ absl::Status GLShowMat(
     return absl::UnknownError("Failed to clear colour and depth buffers.");
   }
   // Store the output to the display framebuffer.
-  if (output.step == cv::Mat::AUTO_STEP) {
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, output.cols, output.rows, 0, GL_RGB, GL_UNSIGNED_BYTE, output.data);
+  if (tmp_frame.step == cv::Mat::AUTO_STEP) {
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, tmp_frame.cols, tmp_frame.rows, 0, GL_RGB, GL_UNSIGNED_BYTE, tmp_frame.data);
     if ((glint = glGetError())) {
       ABSL_LOG(ERROR) << "Failed to store output frame to GL texture. "
         << "'glTexImage2D' failed with error " << glint << ".";
     }
   } else {
-    glPixelStorei(GL_UNPACK_ALIGNMENT, (output.step & 3) ? 1 : 4);
+    glPixelStorei(GL_UNPACK_ALIGNMENT, (tmp_frame.step & 3) ? 1 : 4);
     if ((glint = glGetError())) {
       ABSL_LOG(ERROR) << "Failed set alignment for output frame. "
         << "'glPixelStorei' failed with error " << glint << ".";
     }
-    glPixelStorei(GL_UNPACK_ROW_LENGTH, output.step / 3);
+    glPixelStorei(GL_UNPACK_ROW_LENGTH, tmp_frame.step / 3);
     if ((glint = glGetError())) {
       ABSL_LOG(ERROR) << "Failed set columns for output frame. "
         << "'glPixelStorei' failed with error " << glint << ".";
     }
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, output.cols, output.rows, 0, GL_RGB, GL_UNSIGNED_BYTE, output.data);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, tmp_frame.cols, tmp_frame.rows, 0, GL_RGB, GL_UNSIGNED_BYTE, tmp_frame.data);
     if ((glint = glGetError())) {
       ABSL_LOG(ERROR) << "Failed to store output frame to GL texture. "
         << "'glTexImage2D' failed with error " << glint << ".";
     }
   }
-  glBlitFramebuffer(0, 0, output.cols, output.rows, 0, 0, window_width, window_height, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+  glBlitFramebuffer(0, 0, tmp_frame.cols, tmp_frame.rows, 0, 0, window_width, window_height, GL_COLOR_BUFFER_BIT, GL_LINEAR);
   if ((glint = glGetError())) {
     ABSL_LOG(ERROR) << "Failed to blit framebuffer. 'glBlitFramebuffer' "
       << "failed with error " << glint << ".";
