@@ -29,7 +29,7 @@ cc_binary(
         "//mediapipe/models:knift_index.pb",
         "//mediapipe/models:knift_float.tflite",
         "//mediapipe/models:knift_labelmap.txt",
-    ]
+    ],
     deps = [
         "//mediapipe/examples/qnx:simple_run_graph_main",
         "//mediapipe/graphs/template_matching:desktop_calculators",
