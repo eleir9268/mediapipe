@@ -352,6 +352,7 @@ void TeardownCameraSink(mp_camera_info_t &ci) {
 absl::Status InitScreenWindow(mp_screen_info_t &si) {
   screen_display_t *screen_display_p = nullptr;
   int usage;
+  int format;
   absl::Status ret = absl::OkStatus();
 
   if (si.initialized) {
@@ -388,6 +389,12 @@ absl::Status InitScreenWindow(mp_screen_info_t &si) {
   usage = SCREEN_USAGE_OPENGL_ES2 | SCREEN_USAGE_OPENGL_ES3;
   if (screen_set_window_property_iv(si.window, SCREEN_PROPERTY_USAGE, &usage) < 0) {
     ret = absl::ErrnoToStatus(errno, "Failed to set window usage.");
+    goto failure;
+  }
+
+  format = SCREEN_FORMAT_RGBA8888;
+  if (screen_set_window_property_iv(si.window, SCREEN_PROPERTY_FORMAT, &format) < 0) {
+    ret = absl::ErrnoToStatus(errno, "Failed to set window format.");
     goto failure;
   }
 
