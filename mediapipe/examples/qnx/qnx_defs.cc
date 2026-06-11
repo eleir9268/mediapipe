@@ -225,7 +225,6 @@ absl::Status InitCameraSink(
   const camera_unit_t unit,
   const bool save_video) {
   std::vector<camera_unit_t> units;
-  std::vector<camera_frametype_t> frametypes;
   camera_frametype_t frametype = CAMERA_FRAMETYPE_UNSPECIFIED;
   int cam_ret;
   absl::Status ret = absl::OkStatus();
