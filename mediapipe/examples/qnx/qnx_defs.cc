@@ -244,6 +244,7 @@ absl::Status InitCameraSink(
   } else if ((unit <= CAMERA_UNIT_NONE) || (unit >= CAMERA_UNIT_NUM_UNITS)) {
     ABSL_LOG(WARNING) << "The specified camera unit is invalid. Falling back to "
       << "first available camera unit.";
+    ci.unit = CAMERA_UNIT_INVALID;
   } else {
     ci.unit = unit;
   }
