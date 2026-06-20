@@ -224,6 +224,8 @@ absl::Status InitCameraSink(
   mp_camera_info_t &ci,
   const camera_unit_t unit,
   const bool save_video) {
+  // Value ISO for CM3 imx708 is 112 ~ 960 inclusive
+  const unsigned isoValue = 800;
   std::vector<camera_unit_t> units;
   camera_frametype_t frametype = CAMERA_FRAMETYPE_UNSPECIFIED;
   int cam_ret;
@@ -329,6 +331,9 @@ absl::Status InitCameraSink(
     ret = absl::ErrnoToStatus(cam_ret, "Failed to start viewfinder.");
     goto failure;
   }
+
+  // User could be running another camera, so ignore the return
+  (void)camera_set_manual_iso(ci.handle, isoValue);
 
   ci.initialized = true;
 
