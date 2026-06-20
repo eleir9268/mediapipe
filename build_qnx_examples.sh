@@ -41,12 +41,19 @@ python_qnx_toolchain="python_qnx"
 cpp_qnx_toolchain="cpp_qnx"
 buildbase_qnx_toolchain="buildbase_qnx"
 
+force=false
+if [ -n "$BAZEL_JOBS" ] ; then
+  jobs=$BAZEL_JOBS
+else
+  jobs=1
+fi
+
 function clean() {
-    echo "Running clean function."
-    rm -rf $python_toolchain
-    rm -rf $python_qnx_toolchain
-    rm -rf $cpp_qnx_toolchain
-    rm -rf $buildbase_qnx_toolchain
+  echo "Running clean function."
+  rm -rf $python_toolchain
+  rm -rf $python_qnx_toolchain
+  rm -rf $cpp_qnx_toolchain
+  rm -rf $buildbase_qnx_toolchain
 }
 
 # Create toolchains.
@@ -312,8 +319,8 @@ workspace(name = "buildbase_qnx")
 EOF
 fi
 
-declare -a default_bazel_flags=(build -c opt --define MEDIAPIPE_DISABLE_GPU=1)
-declare -a qnx_bazel_flags=(--action_env=PYTHON_BIN_PATH=/usr/bin/python3 --repo_env=BAZEL_CXXOPTS=-std=c++17 --override_repository=python=${python_toolchain} --override_repository=python_qnx=${python_qnx_toolchain} --extra_toolchains=@${python_qnx_toolchain}//:qnx_py_toolchain --extra_toolchains=@${python_qnx_toolchain}//:qnx_py_toolchain2 --extra_toolchains=@${python_qnx_toolchain}//:qnx_py_cc_toolchain --extra_toolchains=//${cpp_qnx_toolchain}:qnx_cc_toolchain_x64 --extra_toolchains=//${cpp_qnx_toolchain}:qnx_cc_toolchain_arm64 --extra_toolchains=//${buildbase_qnx_toolchain}:qnx_cmake_toolchain --extra_toolchains=//${buildbase_qnx_toolchain}:qnx_ninja_toolchain)
+declare -a default_bazel_flags=(build -c opt --define MEDIAPIPE_DISABLE_GPU=1 --jobs=$jobs)
+declare -a qnx_bazel_flags=(--action_env=PYTHON_BIN_PATH=/usr/bin/python3 --repo_env=BAZEL_CXXOPTS=-std=c++17 --override_repository=python=${python_toolchain} --override_repository=python_qnx=${python_qnx_toolchain} --extra_toolchains=@python_qnx//:qnx_py_toolchain --extra_toolchains=@python_qnx//:qnx_py_toolchain2 --extra_toolchains=@python_qnx//:qnx_py_cc_toolchain --extra_toolchains=//${cpp_qnx_toolchain}:qnx_cc_toolchain_x64 --extra_toolchains=//${cpp_qnx_toolchain}:qnx_cc_toolchain_arm64 --extra_toolchains=//${buildbase_qnx_toolchain}:qnx_cmake_toolchain --extra_toolchains=//${buildbase_qnx_toolchain}:qnx_ninja_toolchain)
 
 while [[ -n $1 ]]; do
   case $1 in
@@ -321,9 +328,15 @@ while [[ -n $1 ]]; do
       shift
       out_dir=$1
       ;;
-    -c)
+    -j)
       shift
+      jobs=$1
+      ;;
+    -c)
       clean
+      ;;
+    -f)
+      force=true
       ;;
     *)
       echo "Unsupported input argument $1."
@@ -352,6 +365,20 @@ for app in ${apps}; do
     target="${app}:${target_name}_cpu"
 
     echo "=== Target: ${target}"
+    if [ "$force" = false ] ; then
+      confirmed=false
+      while true; do
+        read -p "Confirm (y/n): " yn
+        case $yn in
+          [Yy]* ) confirmed=true; break;;
+          [Nn]* ) break;;
+          * ) echo "Answer one of [YyNn].";;
+        esac
+      done
+      if [ "$confirmed" = false ] ; then
+        continue
+      fi
+    fi
 
     bazel_flags=("${default_bazel_flags[@]}")
     bazel_flags+=("${qnx_bazel_flags[@]}")
