@@ -379,8 +379,10 @@ absl::Status InitCameraSink(
     goto failure;
   }
 
-  // User could be running another camera, so ignore the return
-  (void)camera_set_manual_iso(ci.handle, iso);
+  if (iso != UINT_MAX) {
+    // User could be running another camera, so ignore the return
+    (void)camera_set_manual_iso(ci.handle, iso);
+  }
 
   ci.initialized = true;
 
