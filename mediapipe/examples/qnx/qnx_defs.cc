@@ -220,12 +220,59 @@ static void CameraViewfinderCallback(
   CameraProduceData(*ci_p, buffer_p);
 }
 
+// Print help message for selecting an appropriate ISO value.
+absl::Status PrintCameraIsoHelp(const mp_camera_info_t &ci) {
+  int cam_ret;
+  std::vector<unsigned> supported_iso;
+  unsigned num_supported_iso;
+  unsigned iso;
+  bool is_minmax;
+
+  cam_ret = camera_get_supported_manual_iso_values(ci.handle, 0, &num_supported_iso, nullptr, &is_minmax);
+  if (cam_ret != CAMERA_EOK) {
+    ABSL_LOG(ERROR) << "Failed to get supported ISO values. "
+      << "'camera_get_supported_manual_iso_values' returned error " << cam_ret
+      << " (" << strerror(cam_ret) << ").";
+    return absl::ErrnoToStatus(cam_ret, "Failed to open camera.");
+  }
+  supported_iso.resize(num_supported_iso);
+  cam_ret = camera_get_supported_manual_iso_values(ci.handle, 0, &num_supported_iso, supported_iso, &is_minmax);
+  if (cam_ret != CAMERA_EOK) {
+    ABSL_LOG(ERROR) << "Failed to get supported ISO values. "
+      << "'camera_get_supported_manual_iso_values' returned error " << cam_ret
+      << " (" << strerror(cam_ret) << ").";
+    return absl::ErrnoToStatus(cam_ret, "Failed to open camera.");
+  }
+  if (is_minmax) {
+    ABSL_LOG(INFO) << "Possible camera ISO values range from "
+      << supported_iso[1] << " to " << supported_iso[0] << ".";
+  } else {
+    // Wrapping in a cv::Mat to use its python formatter for convenience.
+    //
+    // We're implicitly converting to signed here, but iso values shouldn't
+    // grow very large.
+    cv::Mat supported_iso_format(1, supported_iso.size(), CV_32SC1, supported_iso.data());
+    ABSL_LOG(INFO) << "Possible camera ISO values:" << std::endl
+      << cv::format(supported_iso_format, cv::Formatter::FMT_PYTHON);
+  }
+
+  cam_ret = camera_get_manual_iso(ci.handle, &iso);
+  if (cam_ret == CAMERA_EOK) {
+    ABSL_LOG(INFO) << "Using camera ISO value: " << iso;
+  } else {
+    ABSL_LOG(ERROR) << "Failed to get current ISO value. "
+      << "'camera_get_manual_iso' returned error " << cam_ret
+      << " (" << strerror(cam_ret) << ").";
+  }
+
+  return absl::OkStatus();
+}
+
 absl::Status InitCameraSink(
   mp_camera_info_t &ci,
   const camera_unit_t unit,
+  const unsigned iso,
   const bool save_video) {
-  // Value ISO for CM3 imx708 is 112 ~ 960 inclusive
-  const unsigned isoValue = 800;
   std::vector<camera_unit_t> units;
   camera_frametype_t frametype = CAMERA_FRAMETYPE_UNSPECIFIED;
   int cam_ret;
@@ -333,7 +380,7 @@ absl::Status InitCameraSink(
   }
 
   // User could be running another camera, so ignore the return
-  (void)camera_set_manual_iso(ci.handle, isoValue);
+  (void)camera_set_manual_iso(ci.handle, iso);
 
   ci.initialized = true;
 

@@ -42,8 +42,12 @@ constexpr char kWindowName[] = "MediaPipe";
 ABSL_FLAG(std::string, calculator_graph_config_file, "",
           "Name of file containing text format CalculatorGraphConfig proto.");
 ABSL_FLAG(long, camera_unit, (long)CAMERA_UNIT_INVALID,
-          "The camera unit to open."
+          "The camera unit to open. "
           "Set in a .conf file passed to sensor's -c argument at boot.");
+ABSL_FLAG(unsigned, camera_manual_iso, UINT_MAX,
+          "The camera ISO."
+          "The manual ISO, only used when auto exposure is not set in the "
+          "'algorithm_config' config field for sensor framework.");
 ABSL_FLAG(std::string, output_video_path, "",
           "Full path of where to save result (.mp4 only). "
           "If not provided, show result in a window.");
@@ -71,10 +75,12 @@ absl::Status RunMPPGraph() {
 
   const bool save_video = !absl::GetFlag(FLAGS_output_video_path).empty();
   const long camera_unit_long = absl::GetFlag(FLAGS_camera_unit);
+  const unsigned camera_iso = absl::GetFlag(FLAGS_camera_manual_iso);
 
   ABSL_LOG(INFO) << "Initialize the camera or load the video.";
   mp_camera_info_t ci = {};
-  MP_RETURN_IF_ERROR(InitCameraSink(ci, (camera_unit_t)camera_unit_long, save_video));
+  MP_RETURN_IF_ERROR(InitCameraSink(ci, (camera_unit_t)camera_unit_long, camera_iso, save_video));
+  PrintCameraIsoHelp(ci);
 
   cv::VideoWriter writer;
 

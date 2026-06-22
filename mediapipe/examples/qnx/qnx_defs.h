@@ -27,6 +27,8 @@
 #include <utility>
 #include <vector>
 
+#include <limits.h>
+
 #include <camera/camera_api.h>
 #include <camera/camera_3a.h>
 #include <screen/screen.h>
@@ -75,6 +77,7 @@ std::vector<camera_unit_t> QueryCameraUnits();
 std::vector<camera_frametype_t> QueryCameraFrametypes(const mp_camera_info_t &ci);
 void CameraProduceData(mp_camera_info_t &ci, camera_buffer_t* buffer_p);
 cv::Mat CameraConsumeData(mp_camera_info_t &ci);
+absl::Status PrintCameraIsoHelp(const mp_camera_info_t &ci);
 absl::Status InitCameraSink(mp_camera_info_t &ci, const camera_unit_t unit, const bool save_video);
 void TeardownCameraSink(mp_camera_info_t &ci);
 
