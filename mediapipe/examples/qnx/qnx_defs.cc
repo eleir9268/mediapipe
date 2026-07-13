@@ -232,10 +232,25 @@ absl::Status PrintCameraHelp(const mp_camera_info_t &ci) {
 // Print help message for selecting an appropriate ISO value.
 absl::Status PrintCameraIsoHelp(const mp_camera_info_t &ci) {
   int cam_ret;
+  camera_exposuremode_t exposure_mode = CAMERA_EXPOSUREMODE_DEFAULT;
   std::vector<unsigned> supported_iso;
   unsigned num_supported_iso;
   unsigned iso;
   bool is_minmax;
+
+  // Check if we have auto-exposure enabled. This help does not make sense in
+  // that context.
+  cam_ret = camera_get_exposure_mode(ci.handle, &exposure_mode);
+  if (cam_ret != CAMERA_EOK) {
+    ABSL_LOG(ERROR) << "Failed to get exposure mode. "
+      << "'camera_get_exposure_mode' returned error " << cam_ret
+      << " (" << strerror(cam_ret) << ").";
+    return absl::ErrnoToStatus(cam_ret, "Failed to get exposure mode.");
+  }
+  if (!((exposure_mode == CAMERA_EXPOSUREMODE_OFF)
+    || (exposure_mode == CAMERA_EXPOSUREMODE_MANUAL))) {
+    return absl::OkStatus();
+  }
 
   cam_ret = camera_get_supported_manual_iso_values(ci.handle, 0, &num_supported_iso, nullptr, &is_minmax);
   if (cam_ret != CAMERA_EOK) {
@@ -281,10 +296,25 @@ absl::Status PrintCameraIsoHelp(const mp_camera_info_t &ci) {
 // Print help message for selecting an appropriate shutter speed value.
 absl::Status PrintCameraShutterSpeedHelp(const mp_camera_info_t &ci) {
   int cam_ret;
+  camera_exposuremode_t exposure_mode = CAMERA_EXPOSUREMODE_DEFAULT;
   std::vector<double> supported_shutter_speed;
   unsigned num_supported_shutter_speed;
   double shutter_speed;
   bool is_minmax;
+
+  // Check if we have auto-exposure enabled. This help does not make sense in
+  // that context.
+  cam_ret = camera_get_exposure_mode(ci.handle, &exposure_mode);
+  if (cam_ret != CAMERA_EOK) {
+    ABSL_LOG(ERROR) << "Failed to get exposure mode. "
+      << "'camera_get_exposure_mode' returned error " << cam_ret
+      << " (" << strerror(cam_ret) << ").";
+    return absl::ErrnoToStatus(cam_ret, "Failed to get exposure mode.");
+  }
+  if (!((exposure_mode == CAMERA_EXPOSUREMODE_OFF)
+    || (exposure_mode == CAMERA_EXPOSUREMODE_MANUAL))) {
+    return absl::OkStatus();
+  }
 
   cam_ret = camera_get_supported_manual_shutter_speeds(ci.handle, 0, &num_supported_shutter_speed, nullptr, &is_minmax);
   if (cam_ret != CAMERA_EOK) {
@@ -327,10 +357,25 @@ absl::Status PrintCameraShutterSpeedHelp(const mp_camera_info_t &ci) {
 // Print help message for selecting an appropriate aperture value.
 absl::Status PrintCameraApertureHelp(const mp_camera_info_t &ci) {
   int cam_ret;
+  camera_exposuremode_t exposure_mode = CAMERA_EXPOSUREMODE_DEFAULT;
   std::vector<double> supported_aperture;
   unsigned num_supported_aperture;
   double aperture;
   bool is_minmax;
+
+  // Check if we have auto-exposure enabled. This help does not make sense in
+  // that context.
+  cam_ret = camera_get_exposure_mode(ci.handle, &exposure_mode);
+  if (cam_ret != CAMERA_EOK) {
+    ABSL_LOG(ERROR) << "Failed to get exposure mode. "
+      << "'camera_get_exposure_mode' returned error " << cam_ret
+      << " (" << strerror(cam_ret) << ").";
+    return absl::ErrnoToStatus(cam_ret, "Failed to get exposure mode.");
+  }
+  if (!((exposure_mode == CAMERA_EXPOSUREMODE_OFF)
+    || (exposure_mode == CAMERA_EXPOSUREMODE_MANUAL))) {
+    return absl::OkStatus();
+  }
 
   cam_ret = camera_get_supported_manual_aperture_values(ci.handle, 0, &num_supported_aperture, nullptr, &is_minmax);
   if (cam_ret != CAMERA_EOK) {
