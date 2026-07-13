@@ -260,7 +260,7 @@ absl::Status PrintCameraIsoHelp(const mp_camera_info_t &ci) {
     return absl::ErrnoToStatus(cam_ret, "Failed to get supported ISO values.");
   }
   supported_iso.resize(num_supported_iso);
-  cam_ret = camera_get_supported_manual_iso_values(ci.handle, 0, &num_supported_iso, supported_iso, &is_minmax);
+  cam_ret = camera_get_supported_manual_iso_values(ci.handle, 0, &num_supported_iso, supported_iso.data(), &is_minmax);
   if (cam_ret != CAMERA_EOK) {
     ABSL_LOG(ERROR) << "Failed to get supported ISO values. "
       << "'camera_get_supported_manual_iso_values' returned error " << cam_ret
@@ -316,18 +316,18 @@ absl::Status PrintCameraShutterSpeedHelp(const mp_camera_info_t &ci) {
     return absl::OkStatus();
   }
 
-  cam_ret = camera_get_supported_manual_shutter_speed_values(ci.handle, 0, &num_supported_shutter_speed, nullptr, &is_minmax);
+  cam_ret = camera_get_supported_manual_shutter_speeds(ci.handle, 0, &num_supported_shutter_speed, nullptr, &is_minmax);
   if (cam_ret != CAMERA_EOK) {
     ABSL_LOG(ERROR) << "Failed to get supported shutter speed values. "
-      << "'camera_get_supported_manual_shutter_speed_values' returned error " << cam_ret
+      << "'camera_get_supported_manual_shutter_speeds' returned error " << cam_ret
       << " (" << strerror(cam_ret) << ").";
     return absl::ErrnoToStatus(cam_ret, "Failed to get supported shutter speed values.");
   }
   supported_shutter_speed.resize(num_supported_shutter_speed);
-  cam_ret = camera_get_supported_manual_shutter_speed_values(ci.handle, 0, &num_supported_shutter_speed, supported_shutter_speed, &is_minmax);
+  cam_ret = camera_get_supported_manual_shutter_speeds(ci.handle, 0, &num_supported_shutter_speed, supported_shutter_speed.data(), &is_minmax);
   if (cam_ret != CAMERA_EOK) {
     ABSL_LOG(ERROR) << "Failed to get supported shutter speed values. "
-      << "'camera_get_supported_manual_shutter_speed_values' returned error " << cam_ret
+      << "'camera_get_supported_manual_shutter_speeds' returned error " << cam_ret
       << " (" << strerror(cam_ret) << ").";
     return absl::ErrnoToStatus(cam_ret, "Failed to get supported shutter speed values.");
   }
@@ -385,7 +385,7 @@ absl::Status PrintCameraApertureHelp(const mp_camera_info_t &ci) {
     return absl::ErrnoToStatus(cam_ret, "Failed to get supported aperture values.");
   }
   supported_aperture.resize(num_supported_aperture);
-  cam_ret = camera_get_supported_manual_aperture_values(ci.handle, 0, &num_supported_aperture, supported_aperture, &is_minmax);
+  cam_ret = camera_get_supported_manual_aperture_values(ci.handle, 0, &num_supported_aperture, supported_aperture.data(), &is_minmax);
   if (cam_ret != CAMERA_EOK) {
     ABSL_LOG(ERROR) << "Failed to get supported aperture values. "
       << "'camera_get_supported_manual_aperture_values' returned error " << cam_ret
