@@ -43,6 +43,7 @@
 #include "mediapipe/framework/port/opencv_imgproc_inc.h"
 #include "mediapipe/framework/port/opencv_video_inc.h"
 #include "mediapipe/framework/port/status.h"
+#include "mediapipe/framework/port/status_macros.h"
 
 #define MP_CAMERA_ISO_INVALID UINT_MAX
 #define MP_CAMERA_SHUTTER_SPEED_INVALID (-1.0)
@@ -81,7 +82,7 @@ std::vector<camera_unit_t> QueryCameraUnits();
 std::vector<camera_frametype_t> QueryCameraFrametypes(const mp_camera_info_t &ci);
 void CameraProduceData(mp_camera_info_t &ci, camera_buffer_t* buffer_p);
 cv::Mat CameraConsumeData(mp_camera_info_t &ci);
-absl::status PrintCameraHelp(const mp_camera_info_t &ci);
+absl::Status PrintCameraHelp(const mp_camera_info_t &ci);
 absl::Status PrintCameraIsoHelp(const mp_camera_info_t &ci);
 absl::Status PrintCameraShutterSpeedHelp(const mp_camera_info_t &ci);
 absl::Status PrintCameraApertureHelp(const mp_camera_info_t &ci);

@@ -221,7 +221,7 @@ static void CameraViewfinderCallback(
 }
 
 // Print all camera help messages.
-absl::status PrintCameraHelp(const mp_camera_info_t &ci) {
+absl::Status PrintCameraHelp(const mp_camera_info_t &ci) {
   MP_RETURN_IF_ERROR(PrintCameraIsoHelp(ci));
   MP_RETURN_IF_ERROR(PrintCameraShutterSpeedHelp(ci));
   MP_RETURN_IF_ERROR(PrintCameraApertureHelp(ci));
