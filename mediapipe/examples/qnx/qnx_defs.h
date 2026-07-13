@@ -44,6 +44,10 @@
 #include "mediapipe/framework/port/opencv_video_inc.h"
 #include "mediapipe/framework/port/status.h"
 
+#define MP_CAMERA_ISO_INVALID UINT_MAX
+#define MP_CAMERA_SHUTTER_SPEED_INVALID (-1.0)
+#define MP_CAMERA_APERATURE_INVALID (-1.0)
+
 typedef struct mp_camera_info {
   bool initialized;
   camera_unit_t unit;
@@ -77,8 +81,17 @@ std::vector<camera_unit_t> QueryCameraUnits();
 std::vector<camera_frametype_t> QueryCameraFrametypes(const mp_camera_info_t &ci);
 void CameraProduceData(mp_camera_info_t &ci, camera_buffer_t* buffer_p);
 cv::Mat CameraConsumeData(mp_camera_info_t &ci);
+absl::status PrintCameraHelp(const mp_camera_info_t &ci);
 absl::Status PrintCameraIsoHelp(const mp_camera_info_t &ci);
-absl::Status InitCameraSink(mp_camera_info_t &ci, const camera_unit_t unit, const bool save_video);
+absl::Status PrintCameraShutterSpeedHelp(const mp_camera_info_t &ci);
+absl::Status PrintCameraAperatureHelp(const mp_camera_info_t &ci);
+absl::Status InitCameraSink(
+  mp_camera_info_t &ci,
+  const camera_unit_t unit,
+  const bool save_video,
+  const unsigned iso,
+  const double shutter_speed,
+  const double aperature);
 void TeardownCameraSink(mp_camera_info_t &ci);
 
 absl::Status InitScreenWindow(mp_screen_info_t &si);
