@@ -224,7 +224,7 @@ static void CameraViewfinderCallback(
 absl::status PrintCameraHelp(const mp_camera_info_t &ci) {
   MP_RETURN_IF_ERROR(PrintCameraIsoHelp(ci));
   MP_RETURN_IF_ERROR(PrintCameraShutterSpeedHelp(ci));
-  MP_RETURN_IF_ERROR(PrintCameraAperatureHelp(ci));
+  MP_RETURN_IF_ERROR(PrintCameraApertureHelp(ci));
 
   return absl::OkStatus();
 }
@@ -354,13 +354,13 @@ absl::Status PrintCameraShutterSpeedHelp(const mp_camera_info_t &ci) {
   return absl::OkStatus();
 }
 
-// Print help message for selecting an appropriate aperature value.
-absl::Status PrintCameraAperatureHelp(const mp_camera_info_t &ci) {
+// Print help message for selecting an appropriate aperture value.
+absl::Status PrintCameraApertureHelp(const mp_camera_info_t &ci) {
   int cam_ret;
   camera_exposuremode_t exposure_mode = CAMERA_EXPOSUREMODE_DEFAULT;
-  std::vector<double> supported_aperature;
-  unsigned num_supported_aperature;
-  double aperature;
+  std::vector<double> supported_aperture;
+  unsigned num_supported_aperture;
+  double aperture;
   bool is_minmax;
 
   // Check if we have auto-exposure enabled. This help does not make sense in
@@ -377,39 +377,39 @@ absl::Status PrintCameraAperatureHelp(const mp_camera_info_t &ci) {
     return absl::OkStatus();
   }
 
-  cam_ret = camera_get_supported_manual_aperature_values(ci.handle, 0, &num_supported_aperature, nullptr, &is_minmax);
+  cam_ret = camera_get_supported_manual_aperture_values(ci.handle, 0, &num_supported_aperture, nullptr, &is_minmax);
   if (cam_ret != CAMERA_EOK) {
-    ABSL_LOG(ERROR) << "Failed to get supported aperature values. "
-      << "'camera_get_supported_manual_aperature_values' returned error " << cam_ret
+    ABSL_LOG(ERROR) << "Failed to get supported aperture values. "
+      << "'camera_get_supported_manual_aperture_values' returned error " << cam_ret
       << " (" << strerror(cam_ret) << ").";
-    return absl::ErrnoToStatus(cam_ret, "Failed to get supported aperature values.");
+    return absl::ErrnoToStatus(cam_ret, "Failed to get supported aperture values.");
   }
-  supported_aperature.resize(num_supported_aperature);
-  cam_ret = camera_get_supported_manual_aperature_values(ci.handle, 0, &num_supported_aperature, supported_aperature, &is_minmax);
+  supported_aperture.resize(num_supported_aperture);
+  cam_ret = camera_get_supported_manual_aperture_values(ci.handle, 0, &num_supported_aperture, supported_aperture, &is_minmax);
   if (cam_ret != CAMERA_EOK) {
-    ABSL_LOG(ERROR) << "Failed to get supported aperature values. "
-      << "'camera_get_supported_manual_aperature_values' returned error " << cam_ret
+    ABSL_LOG(ERROR) << "Failed to get supported aperture values. "
+      << "'camera_get_supported_manual_aperture_values' returned error " << cam_ret
       << " (" << strerror(cam_ret) << ").";
-    return absl::ErrnoToStatus(cam_ret, "Failed to get supported aperature values.");
+    return absl::ErrnoToStatus(cam_ret, "Failed to get supported aperture values.");
   }
   if (is_minmax) {
-    ABSL_LOG(INFO) << "Possible camera aperature values range from "
-      << supported_aperature[1] << " to " << supported_aperature[0] << ".";
+    ABSL_LOG(INFO) << "Possible camera aperture values range from "
+      << supported_aperture[1] << " to " << supported_aperture[0] << ".";
   } else {
     // Wrapping in a cv::Mat to use its python formatter for convenience.
-    cv::Mat supported_aperature_format(1, supported_aperature.size(), CV_64FC1, supported_aperature.data());
-    ABSL_LOG(INFO) << "Possible camera aperature values:" << std::endl
-      << cv::format(supported_aperature_format, cv::Formatter::FMT_PYTHON);
+    cv::Mat supported_aperture_format(1, supported_aperture.size(), CV_64FC1, supported_aperture.data());
+    ABSL_LOG(INFO) << "Possible camera aperture values:" << std::endl
+      << cv::format(supported_aperture_format, cv::Formatter::FMT_PYTHON);
   }
 
-  cam_ret = camera_get_manual_aperature(ci.handle, &aperature);
+  cam_ret = camera_get_manual_aperture(ci.handle, &aperture);
   if (cam_ret == CAMERA_EOK) {
-    ABSL_LOG(INFO) << "Using camera aperature value: " << aperature;
+    ABSL_LOG(INFO) << "Using camera aperture value: " << aperture;
   } else {
-    ABSL_LOG(ERROR) << "Failed to get current aperature value. "
-      << "'camera_get_manual_aperature' returned error " << cam_ret
+    ABSL_LOG(ERROR) << "Failed to get current aperture value. "
+      << "'camera_get_manual_aperture' returned error " << cam_ret
       << " (" << strerror(cam_ret) << ").";
-    return absl::ErrnoToStatus(cam_ret, "Failed to get current aperature value.");
+    return absl::ErrnoToStatus(cam_ret, "Failed to get current aperture value.");
   }
 
   return absl::OkStatus();
@@ -421,7 +421,7 @@ absl::Status InitCameraSink(
   const bool save_video,
   const unsigned iso,
   const double shutter_speed,
-  const double aperature) {
+  const double aperture) {
   std::vector<camera_unit_t> units;
   camera_frametype_t frametype = CAMERA_FRAMETYPE_UNSPECIFIED;
   camera_exposuremode_t exposure_mode = CAMERA_EXPOSUREMODE_DEFAULT;
@@ -534,7 +534,7 @@ absl::Status InitCameraSink(
   // that is normally provided via OpenCV.
   if ((iso != MP_CAMERA_ISO_INVALID)
     || (shutter_speed != MP_CAMERA_SHUTTER_SPEED_INVALID)
-    || (aperature != MP_CAMERA_APERATURE_INVALID)) {
+    || (aperture != MP_CAMERA_APERTURE_INVALID)) {
     // Try to set the exposure mode if required.
     cam_ret = camera_get_exposure_mode(ci.handle, &exposure_mode);
     if (cam_ret != CAMERA_EOK) {
@@ -559,8 +559,8 @@ absl::Status InitCameraSink(
       if (shutter_speed != MP_CAMERA_SHUTTER_SPEED_INVALID) {
         (void)camera_set_manual_shutter_speed(ci.handle, shutter_speed);
       }
-      if (aperature != MP_CAMERA_APERATURE_INVALID) {
-        (void)camera_set_manual_aperature(ci.handle, aperature);
+      if (aperture != MP_CAMERA_APERTURE_INVALID) {
+        (void)camera_set_manual_aperture(ci.handle, aperture);
       }
     }
   }

@@ -46,7 +46,7 @@
 
 #define MP_CAMERA_ISO_INVALID UINT_MAX
 #define MP_CAMERA_SHUTTER_SPEED_INVALID (-1.0)
-#define MP_CAMERA_APERATURE_INVALID (-1.0)
+#define MP_CAMERA_APERTURE_INVALID (-1.0)
 
 typedef struct mp_camera_info {
   bool initialized;
@@ -84,14 +84,14 @@ cv::Mat CameraConsumeData(mp_camera_info_t &ci);
 absl::status PrintCameraHelp(const mp_camera_info_t &ci);
 absl::Status PrintCameraIsoHelp(const mp_camera_info_t &ci);
 absl::Status PrintCameraShutterSpeedHelp(const mp_camera_info_t &ci);
-absl::Status PrintCameraAperatureHelp(const mp_camera_info_t &ci);
+absl::Status PrintCameraApertureHelp(const mp_camera_info_t &ci);
 absl::Status InitCameraSink(
   mp_camera_info_t &ci,
   const camera_unit_t unit,
   const bool save_video,
   const unsigned iso,
   const double shutter_speed,
-  const double aperature);
+  const double aperture);
 void TeardownCameraSink(mp_camera_info_t &ci);
 
 absl::Status InitScreenWindow(mp_screen_info_t &si);

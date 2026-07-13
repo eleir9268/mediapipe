@@ -48,7 +48,7 @@ ABSL_FLAG(double, camera_manual_shutter_speed, MP_CAMERA_SHUTTER_SPEED_INVALID,
           "The camera shutter speed."
           "The manual shutter speed, also disables 'algorithm_config' config "
           "field for sensor framework.");
-ABSL_FLAG(double, camera_manual_aperature, MP_CAMERA_APERATURE_INVALID,
+ABSL_FLAG(double, camera_manual_aperature, MP_CAMERA_APERTURE_INVALID,
           "The camera aperature."
           "The manual aperature, also disables 'algorithm_config' config "
           "field for sensor framework.");
