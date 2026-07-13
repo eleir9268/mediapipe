@@ -225,6 +225,8 @@ absl::status PrintCameraHelp(const mp_camera_info_t &ci) {
   MP_RETURN_IF_ERROR(PrintCameraIsoHelp(ci));
   MP_RETURN_IF_ERROR(PrintCameraShutterSpeedHelp(ci));
   MP_RETURN_IF_ERROR(PrintCameraAperatureHelp(ci));
+
+  return absl::OkStatus();
 }
 
 // Print help message for selecting an appropriate ISO value.
